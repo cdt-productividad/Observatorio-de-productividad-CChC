@@ -1,661 +1,728 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Plataforma de Productividad CDT · CChC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --cchc-azul: #006ec7;
-      --cchc-rojo: #e74100;
-      --cchc-blanco: #ffffff;
-      --bg: #f3f5f9;
-      --texto: #1f2933;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--texto);
-    }
-
-    header {
-      background: var(--cchc-azul);
-      color: var(--cchc-blanco);
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    header .marca {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      opacity: 0.9;
-    }
-
-    header h1 {
-      margin: 0.15rem 0 0;
-      font-size: 1.4rem;
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 1.5rem auto 2rem;
-      padding: 0 1rem;
-    }
-
-    .card {
-      background: var(--cchc-blanco);
-      border-radius: 0.8rem;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-      margin-bottom: 1rem;
-    }
-
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.15rem;
-      color: var(--cchc-azul);
-    }
-
-    .login-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: flex-end;
-    }
-
-    .field {
-      min-width: 180px;
-    }
-
-    label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      display: inline-block;
-    }
-
-    select,
-    input {
-      width: 100%;
-      padding: 0.45rem 0.6rem;
-      border-radius: 0.5rem;
-      border: 1px solid #cbd2e1;
-      font-size: 0.9rem;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: none;
-      padding: 0.55rem 1.25rem;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: var(--cchc-azul);
-      color: var(--cchc-blanco);
-    }
-
-    .btn-primary:hover {
-      filter: brightness(1.08);
-    }
-
-    .error {
-      color: var(--cchc-rojo);
-      margin-top: 0.5rem;
-      font-size: 0.85rem;
-    }
-
-    .kpi-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.2rem 0.7rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: rgba(0, 110, 199, 0.08);
-      color: var(--cchc-azul);
-    }
-
-    .pill.red {
-      background: rgba(231, 65, 0, 0.08);
-      color: var(--cchc-rojo);
-    }
-
-    .grid {
-      display: grid;
-      gap: 1rem;
-    }
-
-    @media (min-width: 900px) {
-      .grid-2 {
-        grid-template-columns: 1.4fr 1.1fr;
-      }
-      .grid-3 {
-        grid-template-columns: 1fr 1fr 1fr;
-      }
-    }
-
-    .kpi {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .kpi .valor {
-      font-weight: 600;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    th,
-    td {
-      padding: 0.4rem 0.45rem;
-      border-bottom: 1px solid #e1e7f0;
-      text-align: left;
-    }
-
-    th {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      color: #6b778c;
-    }
-
-    tbody tr:hover {
-      background: #f7f9fc;
-    }
-
-    .tag {
-      padding: 0.1rem 0.4rem;
-      border-radius: 0.4rem;
-      font-size: 0.7rem;
-      font-weight: 600;
-      display: inline-block;
-      background: rgba(0, 110, 199, 0.06);
-      color: var(--cchc-azul);
-    }
-
-    .tag.bad {
-      background: rgba(231, 65, 0, 0.06);
-      color: var(--cchc-rojo);
-    }
-
-    .rec-block h3 {
-      margin-bottom: 0.25rem;
-      font-size: 0.95rem;
-      color: var(--cchc-azul);
-    }
-
-    .rec-block p {
-      margin-top: 0;
-      font-size: 0.9rem;
-    }
-
-    .rec-grid {
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    @media (min-width: 900px) {
-      .rec-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    .small {
-      font-size: 0.8rem;
-      color: #6b778c;
-    }
-  </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Visualización de Datos - CChC</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --azul-cchc: #006ec7;
+            --rojo-cchc: #e74100;
+            --blanco: #ffffff;
+            --gris-claro: #f5f5f5;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gris-claro);
+            color: #333;
+        }
+        
+        .header {
+            background-color: var(--azul-cchc);
+            color: var(--blanco);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .login-container {
+            background: var(--blanco);
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 450px;
+            margin: 50px auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .login-container h2 {
+            color: var(--azul-cchc);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--azul-cchc);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--azul-cchc);
+            color: var(--blanco);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #005aa3;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background-color: #ffebee;
+            color: var(--rojo-cchc);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .dashboard {
+            display: none;
+        }
+        
+        .dashboard-header {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-header h2 {
+            color: var(--azul-cchc);
+            margin-bottom: 10px;
+        }
+        
+        .logout-btn {
+            background-color: var(--rojo-cchc);
+            color: var(--blanco);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--azul-cchc);
+        }
+        
+        .stat-comparison {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #666;
+        }
+        
+        .positive {
+            color: #4caf50;
+        }
+        
+        .negative {
+            color: var(--rojo-cchc);
+        }
+        
+        .chart-container {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container h3 {
+            color: var(--azul-cchc);
+            margin-bottom: 15px;
+        }
+        
+        .projects-table {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: var(--azul-cchc);
+            color: var(--blanco);
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .recommendations {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .recommendations h3 {
+            color: var(--azul-cchc);
+            margin-bottom: 15px;
+        }
+        
+        .recommendation-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--azul-cchc);
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .recommendation-item.warning {
+            border-left-color: var(--rojo-cchc);
+        }
+        
+        .recommendation-item.success {
+            border-left-color: #4caf50;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--azul-cchc);
+        }
+        
+        .quality-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .quality-1 {
+            background-color: #4caf50;
+            color: white;
+        }
+        
+        .quality-2 {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .quality-3 {
+            background-color: var(--rojo-cchc);
+            color: white;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div>
-      <div class="marca">CDT · Cámara Chilena de la Construcción</div>
-      <h1>Plataforma de Productividad de Proyectos</h1>
+    <div class="header">
+        <h1>Plataforma de Visualización de Indicadores</h1>
+        <p>Cámara Chilena de la Construcción</p>
     </div>
-  </header>
 
-  <main>
-    <!-- LOGIN -->
-    <section class="card" id="login-card">
-      <h2>Acceso por empresa</h2>
-      <form class="login-form" id="login-form">
-        <div class="field">
-          <label for="empresa-select">Empresa</label>
-          <select id="empresa-select" required>
-            <option value="">Cargando empresas...</option>
-          </select>
+    <!-- Login -->
+    <div id="loginSection" class="login-container">
+        <h2>Acceso a Empresas</h2>
+        <div id="errorMessage" class="error-message"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="empresa">Empresa</label>
+                <input type="text" id="empresa" required placeholder="Ingrese nombre de empresa">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" required placeholder="Ingrese contraseña">
+            </div>
+            <button type="submit" class="btn" id="loginBtn">Ingresar</button>
+        </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardSection" class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                <h2 id="empresaName"></h2>
+                <p id="projectCount"></p>
+            </div>
+
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <div class="chart-container">
+                <h3>Comparación de IPLC por Proyecto</h3>
+                <canvas id="iplcChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Desviaciones de Plazo y Costo</h3>
+                <canvas id="desviacionesChart"></canvas>
+            </div>
+
+            <div class="recommendations" id="recommendations"></div>
+
+            <div class="projects-table">
+                <h3>Detalle de Proyectos</h3>
+                <table id="projectsTable"></table>
+            </div>
         </div>
-        <div class="field">
-          <label for="password-input">Contraseña</label>
-          <input id="password-input" type="password" required />
-        </div>
-        <div>
-          <button type="submit" class="btn btn-primary">Ingresar</button>
-        </div>
-      </form>
-      <div class="error" id="login-error"></div>
-    </section>
+    </div>
 
-    <!-- DASHBOARD -->
-    <section id="dashboard" style="display:none;">
-      <!-- Resumen empresa -->
-      <div class="card">
-        <h2 id="empresa-title">Empresa</h2>
-        <p id="empresa-resumen"></p>
-        <div class="kpi-row" id="empresa-pills"></div>
-      </div>
+    <script>
+        // CONFIGURA AQUÍ LA URL DE TU WEB APP DE GOOGLE APPS SCRIPT
+        const API_URL = 'https://script.google.com/macros/s/AKfycby1HXH8kHzCC5Ggn9jP3xdiNGJB7oBu2b0U2FyS9UeunzGtpfURdte18I58OKmdPOym/exec';
+        
+        let currentEmpresa = null;
+        let proyectosData = [];
+        let resumenGlobal = null;
 
-      <!-- Gráficos principales -->
-      <div class="grid grid-2">
-        <div class="card">
-          <h2>IPLC por proyecto vs benchmark nacional</h2>
-          <canvas id="ipclChart" height="150"></canvas>
-          <p class="small">
-            Se compara el IPLC de cada proyecto con el benchmark nacional 2025 (línea roja) y 2020 (línea gris).
-          </p>
-        </div>
-        <div class="card">
-          <h2>Desviaciones de plazo y presupuesto</h2>
-          <canvas id="desvChart" height="150"></canvas>
-          <p class="small">
-            Valores positivos indican desviaciones por sobre lo planificado; negativos indican obras dentro de plazo/presupuesto.
-          </p>
-        </div>
-      </div>
-
-      <!-- Calidad de dato -->
-      <div class="card">
-        <h2>Calidad de la información de la empresa</h2>
-        <div class="grid grid-2">
-          <div>
-            <div class="kpi"><span>Proyectos con dato calidad 1:</span><span class="valor" id="kpi-c1"></span></div>
-            <div class="kpi"><span>Proyectos con dato calidad 2:</span><span class="valor" id="kpi-c2"></span></div>
-            <div class="kpi"><span>Proyectos con dato calidad 3:</span><span class="valor" id="kpi-c3"></span></div>
-          </div>
-          <div>
-            <canvas id="calidadChart" height="120"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabla de proyectos -->
-      <div class="card">
-        <h2>Detalle de proyectos de la empresa</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Proyecto</th>
-              <th>Año</th>
-              <th>IPLC</th>
-              <th>Plazo (%)</th>
-              <th>Costos (%)</th>
-              <th>MMC</th>
-              <th>BIM</th>
-              <th>Calidad dato</th>
-            </tr>
-          </thead>
-          <tbody id="tabla-proyectos"></tbody>
-        </table>
-        <p class="small">Haz hover sobre el nombre del proyecto (tooltip del navegador) para ver una recomendación específica.</p>
-      </div>
-
-      <!-- Recomendaciones -->
-      <div class="card">
-        <h2>Recomendaciones para la empresa</h2>
-        <p id="rec-general" class="small"></p>
-        <div class="rec-grid">
-          <div class="rec-block">
-            <h3>Productividad y consistencia</h3>
-            <p id="rec-productividad"></p>
-          </div>
-          <div class="rec-block">
-            <h3>Plazos</h3>
-            <p id="rec-plazos"></p>
-          </div>
-          <div class="rec-block">
-            <h3>Costos</h3>
-            <p id="rec-costos"></p>
-          </div>
-          <div class="rec-block">
-            <h3>Calidad del dato e innovación</h3>
-            <p id="rec-calidad"></p>
-            <p id="rec-innovacion"></p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyOa4-tPRDV4b9LXNKhPZh2DwYnki-DQSwSKR3Y2qDvVOe3tGY2cO1Ih4EW6LlswIoI/exec'; // ← reemplaza
-
-    const empresaSelect = document.getElementById('empresa-select');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const dashboard = document.getElementById('dashboard');
-
-    const empresaTitle = document.getElementById('empresa-title');
-    const empresaResumen = document.getElementById('empresa-resumen');
-    const empresaPills = document.getElementById('empresa-pills');
-
-    const tablaProyectos = document.getElementById('tabla-proyectos');
-
-    const kpiC1 = document.getElementById('kpi-c1');
-    const kpiC2 = document.getElementById('kpi-c2');
-    const kpiC3 = document.getElementById('kpi-c3');
-
-    const recGeneral = document.getElementById('rec-general');
-    const recProd = document.getElementById('rec-productividad');
-    const recPlazos = document.getElementById('rec-plazos');
-    const recCostos = document.getElementById('rec-costos');
-    const recCalidad = document.getElementById('rec-calidad');
-    const recInnovacion = document.getElementById('rec-innovacion');
-
-    let ipclChart, desvChart, calidadChart;
-
-    async function fetchCompanies() {
-      try {
-        const res = await fetch(API_URL + '?action=listCompanies');
-        const data = await res.json();
-
-        empresaSelect.innerHTML = '<option value="">Selecciona una empresa...</option>';
-        (data.companies || []).forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          empresaSelect.appendChild(opt);
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const empresa = document.getElementById('empresa').value;
+            const password = document.getElementById('password').value;
+            
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = 'Validando...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'authenticate',
+                        empresa: empresa,
+                        password: password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentEmpresa = empresa;
+                    await loadDashboard();
+                } else {
+                    showError('Credenciales inválidas');
+                }
+            } catch (error) {
+                showError('Error de conexión. Verifica la URL de la API.');
+                console.error(error);
+            }
+            
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').textContent = 'Ingresar';
         });
-      } catch (err) {
-        console.error(err);
-        empresaSelect.innerHTML = '<option value="">Error al cargar empresas</option>';
-      }
-    }
 
-    async function login(empresa, password) {
-      const params = new URLSearchParams({
-        action: 'login',
-        empresa,
-        password
-      });
-      const res = await fetch(API_URL + '?' + params.toString());
-      return res.json();
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginError.textContent = '';
-
-      const empresa = empresaSelect.value;
-      const password = document.getElementById('password-input').value;
-
-      if (!empresa || !password) {
-        loginError.textContent = 'Completa empresa y contraseña.';
-        return;
-      }
-
-      try {
-        const data = await login(empresa, password);
-
-        if (!data.success) {
-          loginError.textContent = data.error || 'Error de autenticación.';
-          return;
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
         }
 
-        renderDashboard(data.empresa, data.dashboard);
-        document.getElementById('login-card').style.display = 'none';
-        dashboard.style.display = 'block';
-      } catch (err) {
-        console.error(err);
-        loginError.textContent = 'Error al conectar con el servidor.';
-      }
-    });
-
-    function renderDashboard(empresa, dash) {
-      const s = dash.stats;
-      const g = dash.global;
-      const proyectos = dash.proyectos || [];
-      const recsEmpresa = dash.recomendacionesEmpresa || {};
-      const recsProyectos = dash.recomendacionesProyectos || [];
-
-      empresaTitle.textContent = empresa;
-      empresaResumen.textContent =
-        `Se analizan ${s.totalProyectos} proyecto(s). ` +
-        `IPLC promedio: ${s.promedioIPLC?.toFixed ? s.promedioIPLC.toFixed(2) : '-'} ` +
-        `(benchmark nacional 2025: ${g.iplc2025?.toFixed ? g.iplc2025.toFixed(2) : '-'}) ` +
-        `y 2020: ${g.iplc2020?.toFixed ? g.iplc2020.toFixed(2) : '-'}.`;
-
-      empresaPills.innerHTML = '';
-      addPill(`Sobre benchmark 2025: ${s.porcentajeSobreBenchmark2025.toFixed(1)}%`);
-      addPill(`Sobre benchmark 2020: ${s.porcentajeSobreBenchmark2020.toFixed(1)}%`);
-      addPill(`En plazo: ${s.porcentajeEnPlazo.toFixed(1)}%`);
-      addPill(`En presupuesto: ${s.porcentajeEnPresupuesto.toFixed(1)}%`);
-      addPill(`Disp. IPLC: ${s.dispersionIPLC?.toFixed ? s.dispersionIPLC.toFixed(2) : '-'}`);
-
-      // KPI calidad
-      kpiC1.textContent = `${s.distribCalidad.c1.toFixed(1)}%`;
-      kpiC2.textContent = `${s.distribCalidad.c2.toFixed(1)}%`;
-      kpiC3.textContent = `${s.distribCalidad.c3.toFixed(1)}%`;
-
-      renderCharts(proyectos, g, s);
-      renderTablaProyectos(proyectos, recsProyectos);
-      renderRecomendacionesEmpresa(recsEmpresa);
-    }
-
-    function addPill(text, isBad) {
-      const span = document.createElement('span');
-      span.className = 'pill' + (isBad ? ' red' : '');
-      span.textContent = text;
-      empresaPills.appendChild(span);
-    }
-
-    function renderCharts(proyectos, global, stats) {
-      const labels = proyectos.map(p => p.nombre);
-
-      // IPLC
-      const ipclProy = proyectos.map(p => p.iplc);
-      const bench2025 = proyectos.map(() => global.iplc2025);
-      const bench2020 = proyectos.map(() => global.iplc2020);
-
-      const ctx1 = document.getElementById('ipclChart').getContext('2d');
-
-      if (ipclChart) ipclChart.destroy();
-      ipclChart = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'IPLC proyecto',
-              data: ipclProy,
-              backgroundColor: '#006ec7'
-            },
-            {
-              label: 'Benchmark 2025',
-              data: bench2025,
-              type: 'line',
-              borderColor: '#e74100',
-              borderWidth: 2,
-              fill: false
-            },
-            {
-              label: 'Benchmark 2020',
-              data: bench2020,
-              type: 'line',
-              borderColor: '#999999',
-              borderWidth: 1,
-              borderDash: [4, 3],
-              fill: false
+        async function loadDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            document.getElementById('dashboardSection').innerHTML = '<div class="loading">Cargando datos...</div>';
+            
+            try {
+                // Cargar proyectos
+                const proyectosResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'getProyectos',
+                        empresa: currentEmpresa
+                    })
+                });
+                proyectosData = (await proyectosResponse.json()).proyectos;
+                
+                // Cargar resumen global
+                const resumenResponse = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'getResumenGlobal'
+                    })
+                });
+                resumenGlobal = await resumenResponse.json();
+                
+                renderDashboard();
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                showError('Error al cargar los datos');
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom' }
-          },
-          scales: {
-            x: { ticks: { autoSkip: true, maxRotation: 45, minRotation: 0 } },
-            y: { title: { display: true, text: 'm²-persona día' } }
-          }
         }
-      });
 
-      // Desviaciones
-      const ctx2 = document.getElementById('desvChart').getContext('2d');
-      const desvPlazo = proyectos.map(p => p.desvPlazoPct);
-      const desvCostos = proyectos.map(p => p.desvCostoPct);
+        function renderDashboard() {
+            document.getElementById('dashboardSection').innerHTML = `
+                <div class="container">
+                    <div class="dashboard-header">
+                        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                        <h2 id="empresaName">${currentEmpresa}</h2>
+                        <p id="projectCount">${proyectosData.length} proyectos registrados</p>
+                    </div>
+                    <div class="stats-grid" id="statsGrid"></div>
+                    <div class="chart-container">
+                        <h3>Comparación de IPLC por Proyecto</h3>
+                        <canvas id="iplcChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Desviaciones de Plazo y Costo</h3>
+                        <canvas id="desviacionesChart"></canvas>
+                    </div>
+                    <div class="recommendations" id="recommendations"></div>
+                    <div class="projects-table">
+                        <h3>Detalle de Proyectos</h3>
+                        <div style="overflow-x: auto;">
+                            <table id="projectsTable"></table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            renderStats();
+            renderCharts();
+            renderRecommendations();
+            renderTable();
+        }
 
-      if (desvChart) desvChart.destroy();
-      desvChart = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Desv. plazo (%)',
-              data: desvPlazo,
-              backgroundColor: '#006ec7'
-            },
-            {
-              label: 'Desv. presupuesto (%)',
-              data: desvCostos,
-              backgroundColor: '#e74100'
+        function renderStats() {
+            const stats = calculateStats();
+            const statsGrid = document.getElementById('statsGrid');
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <h3>IPLC Promedio</h3>
+                    <div class="stat-value">${stats.iplcPromedio.toFixed(2)}</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${resumenGlobal.global2025.iplc.toFixed(2)} 
+                        <span class="${stats.iplcPromedio < resumenGlobal.global2025.iplc ? 'positive' : 'negative'}">
+                            ${stats.iplcPromedio < resumenGlobal.global2025.iplc ? '✓ Mejor (más productivo)' : '✗ Por mejorar (menos productivo)'}
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Desv. Plazo Promedio</h3>
+                    <div class="stat-value">${(stats.desviacionPlazoPromedio * 100).toFixed(1)}%</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1)}%
+                        <span class="${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? 'positive' : 'negative'}">
+                            ${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? '✓ Mejor' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Desv. Costo Promedio</h3>
+                    <div class="stat-value">${(stats.desviacionCostoPromedio * 100).toFixed(1)}%</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1)}%
+                        <span class="${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? 'positive' : 'negative'}">
+                            ${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? '✓ Mejor' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Generación Residuos</h3>
+                    <div class="stat-value">${stats.residuosPromedio.toFixed(3)}</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${resumenGlobal.global2025.generacionResiduos.toFixed(3)} m³/m²
+                        <span class="${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? 'positive' : 'negative'}">
+                            ${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? '✓ Mejor' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateStats() {
+            const validIPLC = proyectosData.filter(p => p.iplc && !isNaN(p.iplc));
+            const validPlazo = proyectosData.filter(p => p.desviacionPlazo !== null && !isNaN(p.desviacionPlazo));
+            const validCosto = proyectosData.filter(p => p.desviacionCostos !== null && !isNaN(p.desviacionCostos));
+            const validResiduos = proyectosData.filter(p => p.generacionResiduos && !isNaN(p.generacionResiduos));
+            
+            return {
+                iplcPromedio: validIPLC.reduce((sum, p) => sum + p.iplc, 0) / validIPLC.length || 0,
+                desviacionPlazoPromedio: validPlazo.reduce((sum, p) => sum + p.desviacionPlazo, 0) / validPlazo.length || 0,
+                desviacionCostoPromedio: validCosto.reduce((sum, p) => sum + p.desviacionCostos, 0) / validCosto.length || 0,
+                residuosPromedio: validResiduos.reduce((sum, p) => sum + p.generacionResiduos, 0) / validResiduos.length || 0
+            };
+        }
+
+        function renderCharts() {
+            // Gráfico IPLC
+            const iplcCtx = document.getElementById('iplcChart').getContext('2d');
+            new Chart(iplcCtx, {
+                type: 'bar',
+                data: {
+                    labels: proyectosData.map(p => p.nombre),
+                    datasets: [{
+                        label: 'IPLC (m²-persona día)',
+                        data: proyectosData.map(p => p.iplc),
+                        backgroundColor: '#006ec7',
+                        borderColor: '#006ec7',
+                        borderWidth: 1
+                    }, {
+                        label: 'Promedio Nacional 2025',
+                        data: Array(proyectosData.length).fill(resumenGlobal.global2025.iplc),
+                        type: 'line',
+                        borderColor: '#e74100',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Gráfico Desviaciones
+            const desvCtx = document.getElementById('desviacionesChart').getContext('2d');
+            new Chart(desvCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Proyectos',
+                        data: proyectosData.map(p => ({
+                            x: (p.desviacionPlazo || 0) * 100,
+                            y: (p.desviacionCostos || 0) * 100
+                        })),
+                        backgroundColor: '#006ec7',
+                        borderColor: '#006ec7'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Desviación de Plazo (%)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Desviación de Costo (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRecommendations() {
+            const stats = calculateStats();
+            const recommendations = [];
+            
+            // Análisis de consistencia IPLC
+            const iplcData = proyectosData.filter(p => p.iplc && !isNaN(p.iplc)).map(p => p.iplc);
+            const iplcStdDev = calculateStdDev(iplcData);
+            const iplcCV = iplcStdDev / stats.iplcPromedio;
+            
+            if (iplcCV > 0.3) {
+                recommendations.push({
+                    type: 'warning',
+                    text: `<strong>Alta variabilidad en IPLC:</strong> Sus proyectos presentan una desviación estándar de ${iplcStdDev.toFixed(2)} (coeficiente de variación: ${(iplcCV * 100).toFixed(1)}%). Se recomienda estandarizar procesos constructivos y metodologías de gestión para lograr mayor consistencia.`
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    text: `<strong>Buena consistencia en IPLC:</strong> Sus proyectos mantienen indicadores consistentes (CV: ${(iplcCV * 100).toFixed(1)}%), lo que refleja procesos estandarizados efectivos.`
+                });
             }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom' }
-          },
-          scales: {
-            y: { title: { display: true, text: '%' } }
-          }
-        }
-      });
-
-      // Calidad de dato
-      const ctx3 = document.getElementById('calidadChart').getContext('2d');
-      if (calidadChart) calidadChart.destroy();
-      calidadChart = new Chart(ctx3, {
-        type: 'pie',
-        data: {
-          labels: ['Calidad 1', 'Calidad 2', 'Calidad 3'],
-          datasets: [{
-            data: [
-              stats.distribCalidad.c1,
-              stats.distribCalidad.c2,
-              stats.distribCalidad.c3
-            ],
-            backgroundColor: ['#006ec7', '#e74100', '#cccccc']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'bottom' }
-          }
-        }
-      });
-    }
-
-    function renderTablaProyectos(proyectos, recsProy) {
-      tablaProyectos.innerHTML = '';
-      const recMap = {};
-      recsProy.forEach(r => { recMap[r.id] = r; });
-
-      proyectos.forEach(p => {
-        const tr = document.createElement('tr');
-
-        const rec = recMap[p.id];
-
-        const tdNombre = document.createElement('td');
-        tdNombre.textContent = p.nombre;
-        if (rec) {
-          const tooltip =
-            (rec.comentarioIPLC || '') + '\n' +
-            (rec.comentarioPlazo || '') + '\n' +
-            (rec.comentarioCostos || '') + '\n' +
-            (rec.comentarioCalidad || '') + '\n' +
-            (rec.comentarioInnovacion || '');
-          tdNombre.title = tooltip.trim();
+            
+            // Comparación con benchmark
+            if (stats.iplcPromedio > resumenGlobal.global2025.iplc) {
+                recommendations.push({
+                    type: 'warning',
+                    text: `<strong>IPLC sobre promedio nacional:</strong> Su indicador promedio (${stats.iplcPromedio.toFixed(2)}) está ${(((stats.iplcPromedio / resumenGlobal.global2025.iplc) - 1) * 100).toFixed(1)}% sobre el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}). Un IPLC más alto indica menor productividad. Considere revisar planificación de recursos y optimización de cuadrillas.`
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    text: `<strong>Excelente productividad:</strong> Su IPLC promedio (${stats.iplcPromedio.toFixed(2)}) está ${((1 - (stats.iplcPromedio / resumenGlobal.global2025.iplc)) * 100).toFixed(1)}% bajo el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}), indicando alta eficiencia productiva. Un IPLC más bajo significa que se necesita menos mano de obra por m² construido.`
+                });
+            }
+            
+            // Calidad de datos
+            const calidadPromedio = proyectosData.reduce((sum, p) => sum + (p.calidadDato || 3), 0) / proyectosData.length;
+            if (calidadPromedio > 1.5) {
+                recommendations.push({
+                    type: 'warning',
+                    text: `<strong>Calidad de datos mejorable:</strong> El promedio de calidad de datos es ${calidadPromedio.toFixed(1)}. Se recomienda implementar sistemas digitales de registro diario para mejorar la precisión de los indicadores.`
+                });
+            }
+            
+            // Uso de tecnologías
+            const usoBIM = proyectosData.filter(p => p.usoBIM === 'Implementó BIM').length;
+            const usoMMC = proyectosData.filter(p => p.usoMMC === 'Usó MMC').length;
+            
+            if (usoBIM / proyectosData.length < 0.5) {
+                recommendations.push({
+                    type: 'warning',
+                    text: `<strong>Bajo uso de BIM:</strong> Solo ${((usoBIM / proyectosData.length) * 100).toFixed(0)}% de sus proyectos implementan BIM. Esta tecnología puede mejorar significativamente la productividad y reducir desviaciones.`
+                });
+            }
+            
+            const recsHTML = recommendations.map(rec => 
+                `<div class="recommendation-item ${rec.type}">${rec.text}</div>`
+            ).join('');
+            
+            document.getElementById('recommendations').innerHTML = `
+                <h3>Recomendaciones y Análisis</h3>
+                ${recsHTML}
+            `;
         }
 
-        const tdAnio = document.createElement('td');
-        tdAnio.textContent = p.anioTermino || '-';
+        function calculateStdDev(arr) {
+            const mean = arr.reduce((sum, val) => sum + val, 0) / arr.length;
+            const variance = arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / arr.length;
+            return Math.sqrt(variance);
+        }
 
-        const tdIplc = document.createElement('td');
-        tdIplc.textContent = p.iplc != null ? p.iplc.toFixed(2) : '-';
+        function renderTable() {
+            const table = document.getElementById('projectsTable');
+            
+            let html = `
+                <thead>
+                    <tr>
+                        <th>Proyecto</th>
+                        <th>Año</th>
+                        <th>Tipo</th>
+                        <th>Región</th>
+                        <th>IPLC</th>
+                        <th>Desv. Plazo</th>
+                        <th>Desv. Costo</th>
+                        <th>Residuos</th>
+                        <th>BIM</th>
+                        <th>MMC</th>
+                        <th>Calidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            proyectosData.forEach(p => {
+                html += `
+                    <tr>
+                        <td>${p.nombre}</td>
+                        <td>${p.anioTermino || 'N/A'}</td>
+                        <td>${p.tipo || 'N/A'}</td>
+                        <td>${p.region || 'N/A'}</td>
+                        <td>${p.iplc ? p.iplc.toFixed(2) : 'N/A'}</td>
+                        <td class="${p.desviacionPlazo > 0 ? 'negative' : 'positive'}">${p.desviacionPlazo ? (p.desviacionPlazo * 100).toFixed(1) + '%' : 'N/A'}</td>
+                        <td class="${p.desviacionCostos > 0 ? 'negative' : 'positive'}">${p.desviacionCostos ? (p.desviacionCostos * 100).toFixed(1) + '%' : 'N/A'}</td>
+                        <td>${p.generacionResiduos ? p.generacionResiduos.toFixed(3) : 'N/A'}</td>
+                        <td>${p.usoBIM || 'N/A'}</td>
+                        <td>${p.usoMMC || 'N/A'}</td>
+                        <td><span class="quality-badge quality-${p.calidadDato || 3}">${p.calidadDato || 'N/A'}</span></td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
 
-        const tdPlazo = document.createElement('td');
-        tdPlazo.textContent = p.desvPlazoPct != null ? p.desvPlazoPct.toFixed(1) : '-';
-
-        const tdCostos = document.createElement('td');
-        tdCostos.textContent = p.desvCostoPct != null ? p.desvCostoPct.toFixed(1) : '-';
-
-        const tdMMC = document.createElement('td');
-        tdMMC.textContent = p.usoMMC || '-';
-
-        const tdBIM = document.createElement('td');
-        tdBIM.textContent = p.usoBIM || '-';
-
-        const tdCalidad = document.createElement('td');
-        const span = document.createElement('span');
-        span.className = 'tag';
-        if (p.calidadDato === 3) span.classList.add('bad');
-        span.textContent = p.calidadDato != null ? 'C' + p.calidadDato : 'Sin info';
-        tdCalidad.appendChild(span);
-
-        tr.appendChild(tdNombre);
-        tr.appendChild(tdAnio);
-        tr.appendChild(tdIplc);
-        tr.appendChild(tdPlazo);
-        tr.appendChild(tdCostos);
-        tr.appendChild(tdMMC);
-        tr.appendChild(tdBIM);
-        tr.appendChild(tdCalidad);
-
-        tablaProyectos.appendChild(tr);
-      });
-    }
-
-    function renderRecomendacionesEmpresa(recs) {
-      recGeneral.textContent = recs.general || '';
-      recProd.innerHTML = recs.productividad || '';
-      recPlazos.innerHTML = recs.plazos || '';
-      recCostos.innerHTML = recs.costos || '';
-      recCalidad.innerHTML = recs.calidadDato || '';
-      recInnovacion.innerHTML = recs.innovacion || '';
-    }
-
-    // Al cargar la página
-    fetchCompanies();
-  </script>
+        function logout() {
+            currentEmpresa = null;
+            proyectosData = [];
+            resumenGlobal = null;
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('empresa').value = '';
+            document.getElementById('password').value = '';
+        }
+    </script>
 </body>
 </html>
