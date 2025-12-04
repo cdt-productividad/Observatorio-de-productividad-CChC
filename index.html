@@ -452,6 +452,10 @@
                         <canvas id="iplcChart"></canvas>
                     </div>
                     <div class="chart-container">
+                        <h3>Generación de Residuos por Proyecto</h3>
+                        <canvas id="residuosChart"></canvas>
+                    </div>
+                    <div class="chart-container">
                         <h3>Desviaciones de Plazo y Costo</h3>
                         <canvas id="desviacionesChart"></canvas>
                     </div>
@@ -551,6 +555,7 @@
         }
 
         function renderCharts() {
+            // Gráfico IPLC con benchmarks 2025 y 2020
             const iplcCtx = document.getElementById('iplcChart').getContext('2d');
             new Chart(iplcCtx, {
                 type: 'bar',
@@ -569,7 +574,17 @@
                         borderColor: '#e74100',
                         borderWidth: 2,
                         borderDash: [5, 5],
-                        pointRadius: 0
+                        pointRadius: 0,
+                        fill: false
+                    }, {
+                        label: 'Benchmark Matrix 2020',
+                        data: Array(proyectosData.length).fill(resumenGlobal.global2020.iplc),
+                        type: 'line',
+                        borderColor: '#ff9800',
+                        borderWidth: 2,
+                        borderDash: [10, 5],
+                        pointRadius: 0,
+                        fill: false
                     }]
                 },
                 options: {
@@ -581,7 +596,62 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'm²-persona día (Mayor = Más Productivo)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Gráfico de Generación de Residuos
+            const residuosCtx = document.getElementById('residuosChart').getContext('2d');
+            new Chart(residuosCtx, {
+                type: 'bar',
+                data: {
+                    labels: proyectosData.map(p => p.nombre),
+                    datasets: [{
+                        label: 'Generación de Residuos (m³/m²)',
+                        data: proyectosData.map(p => p.generacionResiduos),
+                        backgroundColor: '#006ec7',
+                        borderColor: '#006ec7',
+                        borderWidth: 1
+                    }, {
+                        label: 'Promedio Nacional 2025',
+                        data: Array(proyectosData.length).fill(resumenGlobal.global2025.generacionResiduos),
+                        type: 'line',
+                        borderColor: '#e74100',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }, {
+                        label: 'Benchmark Matrix 2020',
+                        data: Array(proyectosData.length).fill(resumenGlobal.global2020.generacionResiduos),
+                        type: 'line',
+                        borderColor: '#ff9800',
+                        borderWidth: 2,
+                        borderDash: [10, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'm³/m² (Menor = Mejor Gestión)'
+                            }
                         }
                     }
                 }
@@ -743,41 +813,148 @@
             html += '<div class="analysis-subsection"><h4>1. Productividad Laboral (IPLC)</h4>';
             html += '<div class="analysis-text">Su empresa presenta un <span class="metric-highlight">IPLC promedio de ' + stats.iplcPromedio.toFixed(2) + ' m²-persona día</span>, lo que representa un desempeño <strong>' + (mejoraNacional2025 > 0 ? 'superior' : 'inferior') + '</strong> en <span class="metric-highlight">' + Math.abs(mejoraNacional2025).toFixed(1) + '%</span> respecto al promedio nacional 2025 (' + resumenGlobal.global2025.iplc.toFixed(2) + '). Un IPLC más alto indica mayor productividad, ya que representa más metros cuadrados construidos por cada persona-día trabajada.</div>';
             html += '<div class="analysis-text">Comparado con el benchmark Matrix 2020 (' + resumenGlobal.global2020.iplc.toFixed(2) + '), su empresa muestra una ' + (mejoraNacional2020 > 0 ? 'evolución positiva' : 'oportunidad de mejora') + ' de <span class="metric-highlight">' + Math.abs(mejoraNacional2020).toFixed(1) + '%</span>.</div>';
-            html += '<div class="analysis-text"><strong>Consistencia:</strong> La desviación estándar de sus proyectos es ' + iplcStdDev.toFixed(2) + ' con un coeficiente de variación (CV) de <span class="metric-highlight">' + (iplcCV * 100).toFixed(1) + '%</span>. ';
+            html += '<div class="analysis-text"><strong>Análisis de Consistencia - Coeficiente de Variación (CV):</strong> La desviación estándar de sus proyectos es ' + iplcStdDev.toFixed(2) + ' con un <span class="metric-highlight">CV de ' + (iplcCV * 100).toFixed(1) + '%</span>. El CV es un indicador estadístico que mide la dispersión relativa de los datos, permitiendo evaluar qué tan consistentes son los resultados entre proyectos. Se calcula dividiendo la desviación estándar entre el promedio, expresándolo como porcentaje. ';
             if (iplcCV < 0.15) {
-                html += 'Esto indica una <strong>excelente consistencia</strong> en sus procesos constructivos. Un CV bajo del ' + (iplcCV * 100).toFixed(1) + '% demuestra que su empresa ha logrado estandarizar metodologías de trabajo, lo que permite predecir con mayor certeza el desempeño de futuros proyectos y refleja madurez en la gestión de operaciones.';
+                html += 'Su CV de ' + (iplcCV * 100).toFixed(1) + '% indica <strong>excelente consistencia operacional</strong>. Esto significa que sus proyectos tienen rendimientos muy similares entre sí, lo que refleja: (a) procesos constructivos altamente estandarizados, (b) gestión de proyectos con metodologías replicables, (c) capacidad de predecir con precisión el desempeño de futuros proyectos, y (d) madurez organizacional en la gestión de operaciones. Esta consistencia es un activo estratégico porque reduce riesgos, facilita la planificación y genera confianza en stakeholders.';
             } else if (iplcCV < 0.30) {
-                html += 'Esto indica una <strong>consistencia moderada</strong> con un CV de ' + (iplcCV * 100).toFixed(1) + '%. Existe variabilidad entre proyectos que sugiere diferencias en la gestión o condiciones de obra. Una mayor estandarización de procesos podría reducir esta dispersión y mejorar la previsibilidad del desempeño.';
+                html += 'Su CV de ' + (iplcCV * 100).toFixed(1) + '% indica <strong>consistencia moderada</strong>. Existe variabilidad notable entre proyectos que puede atribuirse a: (a) diferencias en la complejidad técnica de las obras, (b) variación en las condiciones de sitio (accesibilidad, clima, geografía), (c) equipos de gestión con distintos niveles de experiencia, (d) proveedores o subcontratistas diferentes, o (e) tipologías de proyectos muy diversas. Una mayor estandarización de procesos y transferencia de conocimiento entre proyectos podría reducir esta dispersión y mejorar la previsibilidad.';
             } else {
-                html += 'Esto indica una <strong>alta variabilidad</strong> con un CV de ' + (iplcCV * 100).toFixed(1) + '%, lo que sugiere falta de estandarización en los procesos constructivos. Esta inconsistencia dificulta la predicción del desempeño y puede indicar diferencias significativas en gestión, metodologías o condiciones entre proyectos.';
+                html += 'Su CV de ' + (iplcCV * 100).toFixed(1) + '% indica <strong>alta variabilidad</strong>. Esta inconsistencia significativa puede deberse a: (a) ausencia de procedimientos operativos estándar, (b) falta de transferencia de lecciones aprendidas entre proyectos, (c) equipos de proyecto operando de forma independiente sin coordinación central, (d) diferencias sustanciales en complejidad, escala o tipología de obras, o (e) factores externos específicos de cada proyecto (huelgas, clima adverso, problemas de suministro). Esta alta dispersión dificulta la predicción del desempeño, aumenta riesgos de estimación y puede indicar oportunidades importantes de mejora mediante la estandarización.';
             }
             html += '</div></div>';
             
             html += '<div class="analysis-subsection"><h4>2. Impacto de Tecnologías (BIM y MMC)</h4>';
+            
             if (proyectosConBIM.length > 0 && proyectosSinBIM.length > 0) {
-                html += '<div class="analysis-text"><strong>BIM:</strong> Sus proyectos que implementaron BIM (' + proyectosConBIM.length + ' de ' + proyectosData.length + ') alcanzaron un IPLC promedio de <span class="metric-highlight">' + iplcConBIM.toFixed(2) + '</span>, mientras que los que no lo implementaron registraron <span class="metric-highlight">' + iplcSinBIM.toFixed(2) + '</span>. Esto representa una ' + (mejoraBIM > 0 ? '<strong>mejora del ' + mejoraBIM.toFixed(1) + '%</strong> en productividad laboral' : 'diferencia de ' + Math.abs(mejoraBIM).toFixed(1) + '%') + '.</div>';
-                html += '<div class="analysis-text">En cuanto a control de proyecto, los proyectos con BIM presentaron una desviación promedio de plazo de <span class="metric-highlight">' + (desvPlazoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvPlazoSinBIM * 100).toFixed(1) + '%</span> sin BIM, y desviación de costos de <span class="metric-highlight">' + (desvCostoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvCostoSinBIM * 100).toFixed(1) + '%</span>.' + (desvPlazoBIM < desvPlazoSinBIM && desvCostoBIM < desvCostoSinBIM ? ' Esto confirma que BIM no solo mejora la productividad, sino también el control de plazos y costos.' : ' Sin embargo, las desviaciones requieren análisis de factores externos que pudieron afectar los proyectos.') + '</div>';
+                html += '<div class="analysis-text"><strong>BIM (Building Information Modeling):</strong> Sus proyectos que implementaron BIM (' + proyectosConBIM.length + ' de ' + proyectosData.length + ') alcanzaron un IPLC promedio de <span class="metric-highlight">' + iplcConBIM.toFixed(2) + '</span>, mientras que los que no lo implementaron registraron <span class="metric-highlight">' + iplcSinBIM.toFixed(2) + '</span>. Esto representa una ' + (mejoraBIM > 0 ? '<strong>mejora del ' + mejoraBIM.toFixed(1) + '%</strong> en productividad laboral' : 'diferencia de ' + Math.abs(mejoraBIM).toFixed(1) + '% (resultado inesperado que requiere análisis)') + '. ';
+                if (mejoraBIM > 0) {
+                    html += 'Esta mejora se explica porque BIM permite: (a) detección temprana de interferencias y errores de diseño, reduciendo retrabajos, (b) mejor coordinación entre especialidades, (c) generación automática de planos y documentación, ahorrando tiempo administrativo, (d) simulaciones 4D que optimizan secuencias constructivas, y (e) mayor certeza en cantidades de obra, facilitando logística.';
+                } else {
+                    html += 'El resultado contraintuitivo (proyectos sin BIM con mejor IPLC) puede deberse a: (a) curva de aprendizaje inicial en implementación BIM, (b) proyectos con BIM de mayor complejidad técnica, (c) inversión de tiempo en modelado vs. ejecución, o (d) implementación parcial sin capturar todos los beneficios. Se recomienda evaluar caso por caso.';
+                }
+                html += '</div>';
+                html += '<div class="analysis-text">En cuanto a control de proyecto, los proyectos con BIM presentaron una desviación promedio de plazo de <span class="metric-highlight">' + (desvPlazoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvPlazoSinBIM * 100).toFixed(1) + '%</span> sin BIM, y desviación de costos de <span class="metric-highlight">' + (desvCostoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvCostoSinBIM * 100).toFixed(1) + '%</span>. ';
+                if (desvPlazoBIM < desvPlazoSinBIM && desvCostoBIM < desvCostoSinBIM) {
+                    html += 'Esto confirma que BIM no solo mejora la productividad, sino también el control de plazos y costos mediante planificación más precisa y detección temprana de problemas.';
+                } else if (desvPlazoBIM < desvPlazoSinBIM || desvCostoBIM < desvCostoSinBIM) {
+                    html += 'BIM muestra beneficios parciales en control de proyectos. Las desviaciones pueden estar influenciadas por factores externos (condiciones de mercado, eventos imprevistos) o por el nivel de madurez en la implementación BIM.';
+                } else {
+                    html += 'Las desviaciones en proyectos con BIM requieren análisis profundo. Posibles causas: complejidad inherente de los proyectos que adoptaron BIM, factores externos específicos, o necesidad de optimizar procesos de implementación.';
+                }
+                html += '</div>';
+            } else if (proyectosConBIM.length === proyectosData.length) {
+                html += '<div class="analysis-text"><strong>BIM:</strong> Todos sus proyectos (' + proyectosData.length + ') han implementado BIM, lo que es una fortaleza competitiva significativa. Su IPLC promedio de ' + stats.iplcPromedio.toFixed(2) + ' ' + (stats.iplcPromedio > resumenGlobal.global2025.iplc ? 'supera' : 'está bajo') + ' el promedio nacional, lo que ' + (stats.iplcPromedio > resumenGlobal.global2025.iplc ? 'sugiere que la implementación BIM consistente ha contribuido positivamente a su productividad superior' : 'indica oportunidades de optimizar el uso de BIM o abordar otros factores limitantes de productividad') + '. La adopción universal de BIM demuestra madurez digital y posiciona a la empresa para aprovechar tecnologías avanzadas como inteligencia artificial y gemelos digitales.</div>';
             } else {
-                html += '<div class="analysis-text"><strong>BIM:</strong> ' + (proyectosConBIM.length === 0 ? 'Ninguno de sus proyectos ha implementado BIM. Estudios nacionales muestran que BIM aumenta en promedio un 21% la productividad laboral.' : 'No se puede realizar comparación directa ya que todos sus proyectos implementaron BIM.') + '</div>';
+                html += '<div class="analysis-text"><strong>BIM:</strong> Ninguno de sus proyectos ha implementado BIM. Estudios nacionales muestran que BIM aumenta en promedio un 21% la productividad laboral y mejora significativamente el control de costos y plazos. Esta es una oportunidad crítica de mejora que podría explicar parte de las brechas de desempeño observadas.</div>';
             }
             
             if (proyectosConMMC.length > 0 && proyectosSinMMC.length > 0) {
-                html += '<div class="analysis-text"><strong>MMC:</strong> Los proyectos que utilizaron Métodos Modernos de Construcción (' + proyectosConMMC.length + ' de ' + proyectosData.length + ') lograron un IPLC de <span class="metric-highlight">' + iplcConMMC.toFixed(2) + '</span> versus <span class="metric-highlight">' + iplcSinMMC.toFixed(2) + '</span> sin MMC, ' + (mejoraMMC > 0 ? 'representando una <strong>mejora del ' + mejoraMMC.toFixed(1) + '%</strong> en productividad' : 'con una diferencia de ' + Math.abs(mejoraMMC).toFixed(1) + '%') + '. Estudios nacionales indican que MMC puede aumentar la productividad hasta en un 23%.</div>';
+                html += '<div class="analysis-text"><strong>MMC (Métodos Modernos de Construcción):</strong> Los proyectos que utilizaron MMC (' + proyectosConMMC.length + ' de ' + proyectosData.length + ') lograron un IPLC de <span class="metric-highlight">' + iplcConMMC.toFixed(2) + '</span> versus <span class="metric-highlight">' + iplcSinMMC.toFixed(2) + '</span> sin MMC, ';
+                if (mejoraMMC > 0) {
+                    html += 'representando una <strong>mejora del ' + mejoraMMC.toFixed(1) + '%</strong> en productividad. Este resultado confirma que MMC aporta valor tangible mediante: (a) traslado de trabajo a entornos controlados de fábrica, (b) reducción de dependencia climática, (c) mayor precisión dimensional y calidad, (d) reducción de desperdicios en sitio, y (e) aceleración de cronogramas. La mejora del ' + mejoraMMC.toFixed(1) + '% está ' + (mejoraMMC >= 23 ? 'en línea con' : 'por debajo del') + ' el potencial reportado en estudios nacionales (23%), lo que ' + (mejoraMMC >= 23 ? 'valida una implementación efectiva' : 'sugiere oportunidades adicionales de optimización') + '.';
+                } else {
+                    html += 'con una diferencia de ' + Math.abs(mejoraMMC).toFixed(1) + '%. El resultado contraintuitivo requiere análisis: ¿los proyectos con MMC tienen mayor complejidad? ¿Se midió el costo total o solo la etapa de montaje? ¿Hubo desafíos logísticos en transporte de componentes prefabricados?';
+                }
+                html += '</div>';
+            } else if (proyectosConMMC.length === proyectosData.length) {
+                html += '<div class="analysis-text"><strong>MMC:</strong> Todos sus proyectos han utilizado Métodos Modernos de Construcción, lo que representa una estrategia organizacional clara hacia la industrialización. Su IPLC promedio de ' + stats.iplcPromedio.toFixed(2) + ' ' + (stats.iplcPromedio > resumenGlobal.global2025.iplc ? 'supera el promedio nacional (' + resumenGlobal.global2025.iplc.toFixed(2) + '), lo que puede atribuirse en parte significativa a la adopción consistente de MMC' : 'está bajo el promedio nacional (' + resumenGlobal.global2025.iplc.toFixed(2) + '), lo que sugiere que aunque MMC aporta, otros factores (gestión, logística, calidad de diseño) están limitando el desempeño general') + '. La industrialización total de su cartera es un diferenciador competitivo importante que reduce riesgos climáticos, mejora calidad y puede acelerar cronogramas.</div>';
             } else {
-                html += '<div class="analysis-text"><strong>MMC:</strong> ' + (proyectosConMMC.length === 0 ? 'Ninguno de sus proyectos ha utilizado MMC. Implementar estos métodos podría aumentar su productividad en promedio un 23%.' : 'No se puede realizar comparación directa ya que todos sus proyectos utilizaron MMC.') + '</div>';
+                html += '<div class="analysis-text"><strong>MMC:</strong> Ninguno de sus proyectos ha utilizado MMC. Estudios nacionales indican que MMC puede aumentar la productividad hasta en un 23%. Esta es una oportunidad estratégica mayor, especialmente para proyectos con elementos repetitivos (vivienda social, edificios de oficinas modulares, obras lineales). La no adopción de MMC puede deberse a: falta de proveedores especializados en la región, desconocimiento de la tecnología, percepción de costos iniciales altos, o tipologías de proyecto no adecuadas. Se recomienda análisis de factibilidad.</div>';
             }
             html += '</div>';
             
-            html += '<div class="analysis-subsection"><h4>3. Control de Plazos y Costos</h4>';
-            html += '<div class="analysis-text"><strong>Desviación de Plazos:</strong> Su promedio es <span class="metric-highlight">' + (stats.desviacionPlazoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionPlazoPromedio > 0 ? '(atraso)' : '(adelanto)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPlazos * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
-            html += '<div class="analysis-text"><strong>Desviación de Costos:</strong> Su promedio es <span class="metric-highlight">' + (stats.desviacionCostoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionCostoPromedio > 0 ? '(sobrecosto)' : '(ahorro)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPresupuesto * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
+            html += '<div class="analysis-subsection"><h4>3. Control de Plazos</h4>';
+            html += '<div class="analysis-text"><strong>Desviación Promedio de Plazos:</strong> Su empresa registra una desviación promedio de <span class="metric-highlight">' + (stats.desviacionPlazoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionPlazoPromedio > 0 ? '(atraso respecto a lo planificado)' : '(adelanto respecto a lo planificado)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPlazos * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
             
-            if (stats.iplcPromedio > resumenGlobal.global2025.iplc && (Math.abs(stats.desviacionPlazoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPlazos) || Math.abs(stats.desviacionCostoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPresupuesto))) {
-                html += '<div class="analysis-text"><strong>Análisis crítico:</strong> A pesar de lograr mejor productividad que el promedio nacional, presenta mayores desviaciones. Es fundamental evaluar factores externos que pudieron impactar estos proyectos, tales como: eventos de fuerza mayor (pandemia COVID-19, estallido social), condiciones climáticas adversas, paralizaciones del sector, cambios regulatorios, o problemas en la cadena de suministro.</div>';
+            const mejoraPlazos2025 = Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos);
+            const mejoraPlazos2020 = Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2020.desviacionPlazos);
+            
+            if (mejoraPlazos2025) {
+                html += '<div class="analysis-text"><strong>Interpretación positiva:</strong> Su control de plazos es <strong>superior al promedio nacional</strong> con una diferencia de ' + (Math.abs(resumenGlobal.global2025.desviacionPlazos) - Math.abs(stats.desviacionPlazoPromedio)).toFixed(3) + ' puntos porcentuales. Esto indica: (a) planificación realista y detallada, (b) gestión proactiva de riesgos, (c) seguimiento riguroso de cronogramas, (d) coordinación efectiva con subcontratistas, y (e) capacidad de anticipar y mitigar imprevistos. Un buen control de plazos genera confianza en clientes, reduce costos financieros por extensión de obra y libera recursos para nuevos proyectos.</div>';
+            } else {
+                html += '<div class="analysis-text"><strong>Oportunidad de mejora:</strong> Su control de plazos está <strong>bajo el promedio nacional</strong> con una diferencia de ' + (Math.abs(stats.desviacionPlazoPromedio) - Math.abs(resumenGlobal.global2025.desviacionPlazos)).toFixed(3) + ' puntos porcentuales. Las causas pueden incluir: (a) planificación inicial optimista o incompleta, (b) gestión reactiva ante imprevistos, (c) problemas recurrentes en cadena de suministro, (d) coordinación deficiente entre especialidades, (e) cambios frecuentes de alcance por cliente, o (f) factores externos (clima, permisos, huelgas). Un mal control de plazos genera: sobrecostos por extensión de contratos, pérdida de confianza del cliente, penalidades contractuales, y afectación del flujo de caja. Es crítico implementar sistemas de alerta temprana y análisis de causas raíz.</div>';
+            }
+            
+            if (stats.desviacionPlazoPromedio > 0 && stats.iplcPromedio > resumenGlobal.global2025.iplc) {
+                html += '<div class="analysis-text"><strong>Análisis paradójico:</strong> Aunque su productividad laboral es superior (IPLC alto), presenta atrasos en plazos. Esto sugiere que la productividad por sí sola no garantiza cumplimiento de cronogramas. Posibles explicaciones: (a) factores externos no controlables (permisos demorados, condiciones climáticas extremas, protestas sociales), (b) problemas en fases no constructivas (diseño, ingeniería, aprobaciones), (c) optimización de mano de obra pero con cuellos de botella en otras áreas (suministros, equipos), o (d) planificación inicial demasiado agresiva que no considera contingencias realistas.</div>';
             }
             html += '</div>';
             
-            html += '<div class="analysis-subsection"><h4>4. Calidad y Confiabilidad de los Datos</h4>';
+            html += '<div class="analysis-subsection"><h4>4. Control de Costos</h4>';
+            html += '<div class="analysis-text"><strong>Desviación Promedio de Costos:</strong> Su empresa registra una desviación promedio de <span class="metric-highlight">' + (stats.desviacionCostoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionCostoPromedio > 0 ? '(sobrecosto respecto al presupuesto)' : '(ahorro respecto al presupuesto)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPresupuesto * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
+            
+            const mejoraCostos2025 = Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto);
+            const mejoraCostos2020 = Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2020.desviacionPresupuesto);
+            
+            if (mejoraCostos2025) {
+                html += '<div class="analysis-text"><strong>Interpretación positiva:</strong> Su control de costos es <strong>superior al promedio nacional</strong> con una diferencia de ' + (Math.abs(resumenGlobal.global2025.desviacionPresupuesto) - Math.abs(stats.desviacionCostoPromedio)).toFixed(3) + ' puntos porcentuales. Esto indica: (a) estimación precisa en etapa de licitación, (b) gestión eficiente de compras y contratos, (c) control riguroso de órdenes de cambio, (d) mitigación efectiva de riesgos financieros, y (e) negociación favorable con proveedores. Un buen control de costos protege márgenes, mejora competitividad en licitaciones futuras y genera credibilidad ante inversionistas.</div>';
+            } else {
+                html += '<div class="analysis-text"><strong>Oportunidad de mejora:</strong> Su control de costos está <strong>bajo el promedio nacional</strong> con una diferencia de ' + (Math.abs(stats.desviacionCostoPromedio) - Math.abs(resumenGlobal.global2025.desviacionPresupuesto)).toFixed(3) + ' puntos porcentuales. Las causas frecuentes incluyen: (a) estimación inicial deficiente con omisiones o supuestos erróneos, (b) escalamiento de precios de materiales post-adjudicación, (c) baja productividad que aumenta costos de mano de obra, (d) retrabajos por defectos de calidad, (e) órdenes de cambio no recuperadas del cliente, o (f) gestión débil de contratos con subcontratistas. Los sobrecostos erosionan utilidades, afectan flujo de caja y pueden poner en riesgo la viabilidad de proyectos. Es esencial robustecer procesos de estimación y control presupuestario.</div>';
+            }
+            
+            if (stats.desviacionCostoPromedio > 0.05 && stats.desviacionPlazoPromedio > 0.05) {
+                html += '<div class="analysis-text"><strong>Relación plazo-costo:</strong> Su empresa presenta tanto sobrecostos como atrasos, lo que típicamente están correlacionados. Los atrasos generan sobrecostos por: extensión de gastos generales (personal administrativo, arriendo de oficinas), costos financieros adicionales, penalidades contractuales, y escalamiento de precios. Es fundamental abordar las causas raíz de los atrasos para controlar los sobrecostos asociados. Además, evaluar factores externos que pudieron impactar ambos indicadores: pandemia COVID-19 (paralizaciones, protocolos sanitarios), estallido social 2019, crisis de contenedores y suministros globales, o inflación acelerada en materiales de construcción.</div>';
+            }
+            html += '</div>';
+            
+            html += '<div class="analysis-subsection"><h4>5. Generación de Residuos y Sostenibilidad</h4>';
+            const residuosData = proyectosData.filter(p => p.generacionResiduos && !isNaN(p.generacionResiduos));
+            if (residuosData.length > 0) {
+                const residuosStdDev = calculateStdDev(residuosData.map(p => p.generacionResiduos));
+                const residuosCV = residuosStdDev / stats.residuosPromedio;
+                const mejoraResiduos2025 = stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos;
+                const mejoraResiduos2020 = stats.residuosPromedio < resumenGlobal.global2020.generacionResiduos;
+                
+                html += '<div class="analysis-text">Su empresa genera en promedio <span class="metric-highlight">' + stats.residuosPromedio.toFixed(3) + ' m³/m²</span> de residuos, comparado con <span class="metric-highlight">' + resumenGlobal.global2025.generacionResiduos.toFixed(3) + ' m³/m²</span> a nivel nacional 2025 y <span class="metric-highlight">' + resumenGlobal.global2020.generacionResiduos.toFixed(3) + ' m³/m²</span> en Matrix 2020. ';
+                
+                if (mejoraResiduos2025) {
+                    const reduccion = ((resumenGlobal.global2025.generacionResiduos - stats.residuosPromedio) / resumenGlobal.global2025.generacionResiduos * 100);
+                    html += 'Su empresa genera <strong>' + reduccion.toFixed(1) + '% menos residuos</strong> que el promedio nacional, lo que representa una <strong>gestión ambiental superior</strong> y eficiencia en uso de materiales.';
+                } else {
+                    const exceso = ((stats.residuosPromedio - resumenGlobal.global2025.generacionResiduos) / resumenGlobal.global2025.generacionResiduos * 100);
+                    html += 'Su empresa genera <strong>' + exceso.toFixed(1) + '% más residuos</strong> que el promedio nacional, lo que representa una oportunidad de mejora en gestión de materiales y sostenibilidad.';
+                }
+                html += '</div>';
+                
+                html += '<div class="analysis-text"><strong>Análisis de causas:</strong> La generación de residuos está influenciada por múltiples factores: ';
+                if (mejoraResiduos2025) {
+                    html += '(a) <strong>Uso de MMC o prefabricación</strong>: traslada desperdicios a ambiente controlado de fábrica donde se reciclan más eficientemente. ';
+                    if (proyectosConMMC.length > proyectosData.length / 2) {
+                        html += 'Su alto uso de MMC (' + ((proyectosConMMC.length / proyectosData.length) * 100).toFixed(0) + '% de proyectos) probablemente contribuye a esta reducción. ';
+                    }
+                    html += '(b) <strong>Planificación precisa de cantidades</strong>: uso de BIM para cuantificación exacta reduce sobrecompras. ';
+                    html += '(c) <strong>Prácticas lean construction</strong>: just-in-time de materiales minimiza pérdidas por almacenamiento. ';
+                    html += '(d) <strong>Capacitación en manejo de materiales</strong>: personal entrenado reduce desperdicios por manipulación. ';
+                    html += '(e) <strong>Reciclaje en obra</strong>: segregación y reutilización de materiales.';
+                } else {
+                    html += 'Los residuos elevados pueden deberse a: (a) <strong>Métodos constructivos tradicionales</strong>: construcción húmeda in-situ genera más desperdicios que prefabricación. ';
+                    if (proyectosSinMMC.length > proyectosData.length / 2) {
+                        html += 'Su bajo uso de MMC (' + ((proyectosSinMMC.length / proyectosData.length) * 100).toFixed(0) + '% sin MMC) probablemente contribuye a este problema. ';
+                    }
+                    html += '(b) <strong>Estimación imprecisa</strong>: sobrecompras de materiales que caducan o se deterioran. ';
+                    html += '(c) <strong>Retrabajos por calidad</strong>: defectos que requieren demolición y reposición. ';
+                    html += '(d) <strong>Cambios de diseño</strong>: modificaciones en obra que invalidan trabajo avanzado. ';
+                    html += '(e) <strong>Falta de segregación</strong>: residuos reciclables van a vertedero por no clasificar.';
+                }
+                html += '</div>';
+                
+                html += '<div class="analysis-text"><strong>Consistencia en gestión de residuos:</strong> El coeficiente de variación de ' + (residuosCV * 100).toFixed(1) + '% indica ';
+                if (residuosCV < 0.20) {
+                    html += '<strong>consistencia alta</strong>, lo que sugiere procedimientos estandarizados de gestión de materiales en todos los proyectos.';
+                } else if (residuosCV < 0.40) {
+                    html += '<strong>consistencia moderada</strong>. La variabilidad puede deberse a diferencias en tipologías de proyecto (obra nueva vs remodelación), complejidad de diseños, o nivel de adopción de prácticas sostenibles entre equipos.';
+                } else {
+                    html += '<strong>alta variabilidad</strong>, lo que sugiere ausencia de protocolos uniformes de gestión de residuos. Algunos proyectos logran eficiencia mientras otros generan desperdicios excesivos.';
+                }
+                html += '</div>';
+                
+                html += '<div class="analysis-text"><strong>Impacto económico y ambiental:</strong> La generación de residuos tiene costos directos (transporte a vertedero, tarifas de disposición) e indirectos (sobrecompra de materiales desperdiciados, afectación de imagen corporativa). En Chile, el costo promedio de disposición de residuos de construcción es ~$15.000-25.000/m³. Con su volumen promedio, esto representa un gasto significativo que podría reducirse mediante mejores prácticas. Además, la presión regulatoria y social hacia construcción sostenible hace que la gestión de residuos sea cada vez más crítica para mantener licencia social y cumplir normativas ambientales.</div>';
+            } else {
+                html += '<div class="analysis-text">No hay datos suficientes de generación de residuos en sus proyectos. Esto representa una brecha crítica de información, ya que la sostenibilidad y economía circular son cada vez más relevantes. Se recomienda implementar medición sistemática de residuos para identificar oportunidades de reducción, reciclaje y valorización.</div>';
+            }
+            html += '</div>';
+            
+            html += '<div class="analysis-subsection"><h4>6. Calidad y Confiabilidad de los Datos</h4>';
             html += '<div class="analysis-text">El nivel promedio de calidad de sus datos es <span class="metric-highlight">' + calidadPromedio.toFixed(1) + '</span> en una escala de 1 a 3, donde 1 representa la máxima precisión (registro digital diario) y 3 representa estimaciones basadas en información parcial.</div>';
             html += '<div class="analysis-text"><strong>Distribución de calidad:</strong><ul style="margin-top: 10px; margin-left: 20px;"><li><strong>Calidad 1 (Óptima):</strong> ' + proyectosCalidad1 + ' proyecto' + (proyectosCalidad1 !== 1 ? 's' : '') + ' (' + (proyectosCalidad1/proyectosData.length*100).toFixed(0) + '%) - Datos recolectados mediante plataforma digital con registro diario.</li><li><strong>Calidad 2 (Buena):</strong> ' + proyectosCalidad2 + ' proyecto' + (proyectosCalidad2 !== 1 ? 's' : '') + ' (' + (proyectosCalidad2/proyectosData.length*100).toFixed(0) + '%) - Datos extraídos de documentos administrativos.</li><li><strong>Calidad 3 (Mejorable):</strong> ' + proyectosCalidad3 + ' proyecto' + (proyectosCalidad3 !== 1 ? 's' : '') + ' (' + (proyectosCalidad3/proyectosData.length*100).toFixed(0) + '%) - Datos basados en estimaciones o información parcial.</li></ul></div>';
             
@@ -806,70 +983,136 @@
             const proyectosConMMC = proyectosData.filter(p => p.usoMMC === 'Usó MMC');
             const proyectosSinMMC = proyectosData.filter(p => p.usoMMC === 'No usó MMC');
             
+            // 1. Recomendación de Productividad
             if (stats.iplcPromedio < resumenGlobal.global2025.iplc) {
                 recommendations.push({
                     type: 'warning',
                     priority: '🔴 ALTA PRIORIDAD',
-                    text: '<strong>Mejorar Productividad Laboral:</strong> Su IPLC promedio (' + stats.iplcPromedio.toFixed(2) + ') está ' + (((resumenGlobal.global2025.iplc - stats.iplcPromedio) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% bajo el benchmark nacional. Un IPLC más alto significa mayor productividad.<br><strong>Acciones recomendadas:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Revisar planificación de recursos y dimensionamiento de cuadrillas</li><li>Implementar metodologías lean construction</li><li>Optimizar logística de materiales</li><li>Capacitar en trabajo colaborativo</li></ul>'
+                    title: 'Productividad Laboral',
+                    text: '<strong>Mejorar IPLC:</strong> Su indicador está ' + (((resumenGlobal.global2025.iplc - stats.iplcPromedio) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% bajo el benchmark nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Implementar sistema de planificación colaborativa Last Planner</li><li>Optimizar tamaño de cuadrillas mediante análisis de productividad por actividad</li><li>Eliminar tiempos muertos con metodología lean (5S, flujo continuo)</li><li>Invertir en equipos y herramientas de mayor rendimiento</li><li>Capacitación técnica continua en métodos constructivos eficientes</li></ul>'
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    title: 'Productividad Laboral',
+                    text: '<strong>Mantener Liderazgo en Productividad:</strong> Su IPLC está ' + (((stats.iplcPromedio - resumenGlobal.global2025.iplc) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% sobre el promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Documentar y sistematizar procedimientos de trabajo que generan alta productividad</li><li>Crear programa de certificación interna de mejores prácticas</li><li>Establecer sistema de incentivos vinculado a metas de productividad</li><li>Participar en benchmarking internacional para identificar fronteras de excelencia</li></ul>'
                 });
             }
             
+            // 2. Recomendación de Consistencia
             if (iplcCV > 0.30) {
                 recommendations.push({
                     type: 'warning',
                     priority: '🟡 PRIORIDAD MEDIA',
-                    text: '<strong>Estandarizar Procesos:</strong> El CV de ' + (iplcCV * 100).toFixed(1) + '% indica alta dispersión entre proyectos.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Desarrollar procedimientos estándar de trabajo</li><li>Implementar sistema de lecciones aprendidas</li><li>Crear manuales de mejores prácticas</li></ul>'
+                    title: 'Consistencia Operacional',
+                    text: '<strong>Estandarizar Procesos:</strong> CV de ' + (iplcCV * 100).toFixed(1) + '% indica alta variabilidad.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Crear Manual de Procedimientos Operativos Estándar (SOP)</li><li>Implementar sistema de gestión del conocimiento y lecciones aprendidas</li><li>Establecer auditorías cruzadas entre proyectos para transferir buenas prácticas</li><li>Definir KPIs obligatorios uniformes para todos los proyectos</li><li>Homologar proveedores y subcontratistas críticos a nivel corporativo</li></ul>'
+                });
+            } else if (iplcCV < 0.20) {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    title: 'Consistencia Operacional',
+                    text: '<strong>Excelente Estandarización:</strong> Su CV de ' + (iplcCV * 100).toFixed(1) + '% demuestra procesos maduros y previsibles. Esta consistencia permite cotizar con mayor precisión y reduce riesgos operacionales.'
                 });
             }
             
+            // 3. Recomendación BIM
             if (proyectosSinBIM.length > proyectosConBIM.length) {
                 recommendations.push({
                     type: 'warning',
                     priority: '🔴 ALTA PRIORIDAD',
-                    text: '<strong>Acelerar Adopción de BIM:</strong> Solo ' + ((proyectosConBIM.length / proyectosData.length) * 100).toFixed(0) + '% de sus proyectos implementan BIM. BIM puede aumentar productividad en 21%.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Establecer plan de implementación BIM a 2 años</li><li>Capacitar equipos internos</li><li>Iniciar con proyectos piloto</li></ul>'
+                    title: 'Adopción BIM',
+                    text: '<strong>Acelerar Implementación BIM:</strong> Solo ' + ((proyectosConBIM.length / proyectosData.length) * 100).toFixed(0) + '% de proyectos usan BIM.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Desarrollar Plan Estratégico BIM 2025-2027 con metas progresivas</li><li>Contratar o formar BIM Manager certificado internacionalmente</li><li>Invertir en licencias Revit/Navisworks y hardware adecuado</li><li>Capacitar equipos mediante cursos certificados (mínimo nivel intermedio)</li><li>Iniciar con proyectos piloto de complejidad media para generar casos de éxito</li><li>Desarrollar biblioteca de familias BIM parametrizadas propias</li></ul>'
                 });
             }
             
+            // 4. Recomendación MMC
             if (proyectosSinMMC.length > proyectosConMMC.length) {
                 recommendations.push({
                     type: 'warning',
                     priority: '🟡 PRIORIDAD MEDIA',
-                    text: '<strong>Evaluar MMC:</strong> Solo ' + ((proyectosConMMC.length / proyectosData.length) * 100).toFixed(0) + '% usan MMC. Pueden aumentar productividad hasta 23%.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Realizar estudio de factibilidad</li><li>Identificar elementos repetitivos</li><li>Evaluar alianzas con proveedores</li></ul>'
+                    title: 'Métodos Modernos de Construcción',
+                    text: '<strong>Evaluar Adopción de MMC:</strong> Solo ' + ((proyectosConMMC.length / proyectosData.length) * 100).toFixed(0) + '% usan MMC.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Realizar estudio de factibilidad técnico-económica para industrialización</li><li>Identificar elementos repetitivos susceptibles de prefabricación (baños, escaleras, fachadas)</li><li>Visitar plantas de prefabricados y casos de éxito nacionales</li><li>Evaluar alianza estratégica con fabricantes o inversión en planta propia</li><li>Analizar logística de transporte e izaje de componentes prefabricados</li></ul>'
                 });
             }
             
+            // 5. Recomendación Control de Plazos
+            if (Math.abs(stats.desviacionPlazoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPlazos)) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🔴 ALTA PRIORIDAD',
+                    title: 'Control de Plazos',
+                    text: '<strong>Fortalecer Gestión de Cronogramas:</strong> Desviación de ' + (stats.desviacionPlazoPromedio * 100).toFixed(1) + '% supera promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Implementar software de planificación colaborativa (MS Project, Primavera P6)</li><li>Establecer sistema de alertas tempranas con semáforos de criticidad</li><li>Realizar análisis Monte Carlo de riesgos en cronogramas</li><li>Incluir buffers realistas para actividades críticas</li><li>Reuniones semanales de lookahead planning con subcontratistas</li><li>Post-mortem obligatorio en proyectos con atrasos >10% para lecciones aprendidas</li></ul>'
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    title: 'Control de Plazos',
+                    text: '<strong>Excelente Control de Cronogramas:</strong> Su gestión de plazos supera el promedio nacional, lo que genera confianza en clientes y reduce costos financieros.'
+                });
+            }
+            
+            // 6. Recomendación Control de Costos
+            if (Math.abs(stats.desviacionCostoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPresupuesto)) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🔴 ALTA PRIORIDAD',
+                    title: 'Control de Costos',
+                    text: '<strong>Robustecer Gestión Presupuestaria:</strong> Desviación de ' + (stats.desviacionCostoPromedio * 100).toFixed(1) + '% supera promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Mejorar estimación en licitación usando data histórica de proyectos similares</li><li>Implementar sistema ERP con módulo de control presupuestario en tiempo real</li><li>Establecer proceso riguroso de aprobación de órdenes de cambio</li><li>Negociar contratos marco con proveedores clave para estabilizar precios</li><li>Crear reserva de contingencia del 5-10% para imprevistos</li><li>Auditorías mensuales de costo real vs presupuestado por partida</li></ul>'
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    title: 'Control de Costos',
+                    text: '<strong>Excelente Disciplina Presupuestaria:</strong> Su control de costos supera el promedio nacional, protegiendo márgenes y competitividad.'
+                });
+            }
+            
+            // 7. Recomendación Gestión de Residuos
+            if (stats.residuosPromedio > resumenGlobal.global2025.generacionResiduos) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🟡 PRIORIDAD MEDIA',
+                    title: 'Sostenibilidad y Residuos',
+                    text: '<strong>Reducir Generación de Residuos:</strong> Genera ' + (((stats.residuosPromedio - resumenGlobal.global2025.generacionResiduos) / resumenGlobal.global2025.generacionResiduos) * 100).toFixed(1) + '% más que promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Implementar Plan de Gestión de Residuos (PGR) obligatorio en todas las obras</li><li>Instalar estaciones de segregación en origen (metales, madera, hormigón, plásticos)</li><li>Cuantificación exacta de materiales con BIM para reducir sobrecompras</li><li>Establecer KPI de valorización de residuos (meta: >50% reciclado)</li><li>Capacitar personal en manejo y almacenamiento correcto de materiales</li><li>Buscar alianzas con plantas de reciclaje para dar valor a residuos</li></ul>'
+                });
+            } else {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    title: 'Sostenibilidad y Residuos',
+                    text: '<strong>Gestión Ambiental Destacada:</strong> Su generación de residuos está ' + (((resumenGlobal.global2025.generacionResiduos - stats.residuosPromedio) / resumenGlobal.global2025.generacionResiduos) * 100).toFixed(1) + '% bajo el promedio nacional, demostrando eficiencia en uso de materiales y compromiso con economía circular.'
+                });
+            }
+            
+            // 8. Recomendación Calidad de Datos
             const calidadPromedio = proyectosData.reduce((sum, p) => sum + (p.calidadDato || 3), 0) / proyectosData.length;
             if (calidadPromedio > 1.5) {
                 recommendations.push({
                     type: 'warning',
                     priority: '🔴 ALTA PRIORIDAD',
-                    text: '<strong>Mejorar Calidad de Datos:</strong> Nivel promedio ' + calidadPromedio.toFixed(1) + '. Datos imprecisos limitan decisiones estratégicas.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Implementar plataforma digital de control</li><li>Establecer protocolos de registro diario</li><li>Capacitar administradores de obra</li><li>Objetivo: 80%+ proyectos con calidad nivel 1</li></ul>'
+                    title: 'Calidad de Datos',
+                    text: '<strong>Digitalizar Registro de Información:</strong> Nivel promedio ' + calidadPromedio.toFixed(1) + '/3.0.<br><strong>Impacto:</strong> Datos imprecisos generan decisiones subóptimas y pérdida de oportunidades de mejora.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Adquirir e implementar plataforma digital de control de personal (ej: Mobilizerapp, Workbeat)</li><li>Integrar con sistema de gestión ERP para análisis cruzados</li><li>Establecer protocolo: registro diario obligatorio con validación de jefe de obra</li><li>Capacitar administradores de obra en uso de tablets/smartphones</li><li>Realizar auditorías aleatorias de calidad de datos</li><li>Meta: 80%+ de proyectos con calidad nivel 1 (digital) en 18 meses</li></ul>'
                 });
-            }
-            
-            if (stats.iplcPromedio > resumenGlobal.global2025.iplc) {
+            } else {
                 recommendations.push({
                     type: 'success',
                     priority: '✅ FORTALEZA',
-                    text: '<strong>Mantener Excelencia:</strong> Su IPLC está ' + (((stats.iplcPromedio - resumenGlobal.global2025.iplc) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% sobre el promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Documentar mejores prácticas</li><li>Programa de mentorías</li><li>Participar en benchmarking</li></ul>'
-                });
-            }
-            
-            if (iplcCV < 0.20) {
-                recommendations.push({
-                    type: 'success',
-                    priority: '✅ FORTALEZA',
-                    text: '<strong>Excelente Consistencia:</strong> Su CV de ' + (iplcCV * 100).toFixed(1) + '% demuestra procesos maduros y previsibles.'
+                    title: 'Calidad de Datos',
+                    text: '<strong>Excelente Rigor en Medición:</strong> Su nivel de calidad ' + calidadPromedio.toFixed(1) + '/3.0 permite análisis confiables y toma de decisiones basadas en evidencia robusta.'
                 });
             }
             
             let recsHTML = '';
             for (let i = 0; i < recommendations.length; i++) {
                 const rec = recommendations[i];
-                recsHTML += '<div class="recommendation-item ' + rec.type + '"><div style="font-size: 13px; font-weight: bold; color: #666; margin-bottom: 5px;">' + rec.priority + '</div>' + rec.text + '</div>';
+                recsHTML += '<div class="recommendation-item ' + rec.type + '"><div style="font-size: 13px; font-weight: bold; color: #666; margin-bottom: 5px;">' + rec.priority + ' - ' + rec.title + '</div>' + rec.text + '</div>';
             }
             
-            document.getElementById('recommendations').innerHTML = '<h3>💡 Recomendaciones Estratégicas</h3><p style="margin-bottom: 20px; color: #666;">Basadas en el análisis comparativo con benchmarks nacionales.</p>' + recsHTML;
+            document.getElementById('recommendations').innerHTML = '<h3>💡 Recomendaciones Estratégicas</h3><p style="margin-bottom: 20px; color: #666;">Plan de acción basado en análisis comparativo con benchmarks nacionales y mejores prácticas internacionales del sector construcción.</p>' + recsHTML;
         }
 
         function renderTable() {
