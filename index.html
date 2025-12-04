@@ -344,7 +344,7 @@
 
     <script>
         // CONFIGURA AQUÍ LA URL DE TU WEB APP DE GOOGLE APPS SCRIPT
-        const API_URL = 'https://script.google.com/macros/s/AKfycbz6YBRLfCW6Kt8ARL_eM0yeWPEUJAtbIjnM24yGVojgbUkMuhv2VCy0QGcSVuoPJdOy/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw_dpuJiGYU2HxGFPnxaE5m51K_s1hcEQl0SmQAy-856ijwBWW-aMxwkCpZmmdlrEJB/exec';
         
         let currentEmpresa = null;
         let proyectosData = [];
@@ -471,7 +471,7 @@
                     <div class="stat-comparison">
                         Nacional 2025: ${resumenGlobal.global2025.iplc.toFixed(2)} 
                         <span class="${stats.iplcPromedio < resumenGlobal.global2025.iplc ? 'positive' : 'negative'}">
-                            ${stats.iplcPromedio < resumenGlobal.global2025.iplc ? '✓ Mejor' : '✗ Por mejorar'}
+                            ${stats.iplcPromedio < resumenGlobal.global2025.iplc ? '✓ Mejor (más productivo)' : '✗ Por mejorar (menos productivo)'}
                         </span>
                     </div>
                 </div>
@@ -625,12 +625,12 @@
             if (stats.iplcPromedio > resumenGlobal.global2025.iplc) {
                 recommendations.push({
                     type: 'warning',
-                    text: `<strong>IPLC sobre promedio nacional:</strong> Su indicador promedio (${stats.iplcPromedio.toFixed(2)}) está ${(((stats.iplcPromedio / resumenGlobal.global2025.iplc) - 1) * 100).toFixed(1)}% sobre el promedio nacional. Considere revisar planificación de recursos y optimización de cuadrillas.`
+                    text: `<strong>IPLC sobre promedio nacional:</strong> Su indicador promedio (${stats.iplcPromedio.toFixed(2)}) está ${(((stats.iplcPromedio / resumenGlobal.global2025.iplc) - 1) * 100).toFixed(1)}% sobre el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}). Un IPLC más alto indica menor productividad. Considere revisar planificación de recursos y optimización de cuadrillas.`
                 });
             } else {
                 recommendations.push({
                     type: 'success',
-                    text: `<strong>IPLC bajo promedio nacional:</strong> Su indicador promedio (${stats.iplcPromedio.toFixed(2)}) está ${((1 - (stats.iplcPromedio / resumenGlobal.global2025.iplc)) * 100).toFixed(1)}% bajo el promedio nacional, indicando alta eficiencia productiva.`
+                    text: `<strong>Excelente productividad:</strong> Su IPLC promedio (${stats.iplcPromedio.toFixed(2)}) está ${((1 - (stats.iplcPromedio / resumenGlobal.global2025.iplc)) * 100).toFixed(1)}% bajo el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}), indicando alta eficiencia productiva. Un IPLC más bajo significa que se necesita menos mano de obra por m² construido.`
                 });
             }
             
