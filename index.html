@@ -75,7 +75,7 @@
             font-weight: 500;
         }
         
-        .form-group input, .form-group select {
+        .form-group input {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -84,7 +84,7 @@
             transition: border-color 0.3s;
         }
         
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: var(--azul-cchc);
         }
@@ -230,12 +230,56 @@
             background-color: #f9f9f9;
         }
         
-        .recommendations {
+        .analysis-section {
             background: var(--blanco);
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
             margin-top: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--azul-cchc);
+        }
+        
+        .analysis-section h3 {
+            color: var(--azul-cchc);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .analysis-subsection {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .analysis-subsection h4 {
+            color: #555;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .analysis-text {
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .metric-highlight {
+            background-color: #e3f2fd;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--azul-cchc);
+        }
+        
+        .recommendations {
+            background: var(--blanco);
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--rojo-cchc);
         }
         
         .recommendations h3 {
@@ -295,7 +339,6 @@
         <p>Cámara Chilena de la Construcción</p>
     </div>
 
-    <!-- Login -->
     <div id="loginSection" class="login-container">
         <h2>Acceso a Empresas</h2>
         <div id="errorMessage" class="error-message"></div>
@@ -312,45 +355,15 @@
         </form>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboardSection" class="dashboard">
-        <div class="container">
-            <div class="dashboard-header">
-                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-                <h2 id="empresaName"></h2>
-                <p id="projectCount"></p>
-            </div>
-
-            <div class="stats-grid" id="statsGrid"></div>
-
-            <div class="chart-container">
-                <h3>Comparación de IPLC por Proyecto</h3>
-                <canvas id="iplcChart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>Desviaciones de Plazo y Costo</h3>
-                <canvas id="desviacionesChart"></canvas>
-            </div>
-
-            <div class="recommendations" id="recommendations"></div>
-
-            <div class="projects-table">
-                <h3>Detalle de Proyectos</h3>
-                <table id="projectsTable"></table>
-            </div>
-        </div>
-    </div>
+    <div id="dashboardSection" class="dashboard"></div>
 
     <script>
-        // CONFIGURA AQUÍ LA URL DE TU WEB APP DE GOOGLE APPS SCRIPT
         const API_URL = 'https://script.google.com/macros/s/AKfycbw_dpuJiGYU2HxGFPnxaE5m51K_s1hcEQl0SmQAy-856ijwBWW-aMxwkCpZmmdlrEJB/exec';
         
         let currentEmpresa = null;
         let proyectosData = [];
         let resumenGlobal = null;
 
-        // Login
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const empresa = document.getElementById('empresa').value;
@@ -401,7 +414,6 @@
             document.getElementById('dashboardSection').innerHTML = '<div class="loading">Cargando datos...</div>';
             
             try {
-                // Cargar proyectos
                 const proyectosResponse = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -411,7 +423,6 @@
                 });
                 proyectosData = (await proyectosResponse.json()).proyectos;
                 
-                // Cargar resumen global
                 const resumenResponse = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify({
@@ -432,8 +443,8 @@
                 <div class="container">
                     <div class="dashboard-header">
                         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-                        <h2 id="empresaName">${currentEmpresa}</h2>
-                        <p id="projectCount">${proyectosData.length} proyectos registrados</p>
+                        <h2>${currentEmpresa}</h2>
+                        <p>${proyectosData.length} proyectos registrados</p>
                     </div>
                     <div class="stats-grid" id="statsGrid"></div>
                     <div class="chart-container">
@@ -444,6 +455,7 @@
                         <h3>Desviaciones de Plazo y Costo</h3>
                         <canvas id="desviacionesChart"></canvas>
                     </div>
+                    <div class="analysis-section" id="analysis"></div>
                     <div class="recommendations" id="recommendations"></div>
                     <div class="projects-table">
                         <h3>Detalle de Proyectos</h3>
@@ -456,56 +468,9 @@
             
             renderStats();
             renderCharts();
+            renderAnalysis();
             renderRecommendations();
             renderTable();
-        }
-
-        function renderStats() {
-            const stats = calculateStats();
-            const statsGrid = document.getElementById('statsGrid');
-            
-            statsGrid.innerHTML = `
-                <div class="stat-card">
-                    <h3>IPLC Promedio</h3>
-                    <div class="stat-value">${stats.iplcPromedio.toFixed(2)}</div>
-                    <div class="stat-comparison">
-                        Nacional 2025: ${resumenGlobal.global2025.iplc.toFixed(2)} 
-                        <span class="${stats.iplcPromedio < resumenGlobal.global2025.iplc ? 'positive' : 'negative'}">
-                            ${stats.iplcPromedio < resumenGlobal.global2025.iplc ? '✓ Mejor (más productivo)' : '✗ Por mejorar (menos productivo)'}
-                        </span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <h3>Desv. Plazo Promedio</h3>
-                    <div class="stat-value">${(stats.desviacionPlazoPromedio * 100).toFixed(1)}%</div>
-                    <div class="stat-comparison">
-                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1)}%
-                        <span class="${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? 'positive' : 'negative'}">
-                            ${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? '✓ Mejor' : '✗ Por mejorar'}
-                        </span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <h3>Desv. Costo Promedio</h3>
-                    <div class="stat-value">${(stats.desviacionCostoPromedio * 100).toFixed(1)}%</div>
-                    <div class="stat-comparison">
-                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1)}%
-                        <span class="${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? 'positive' : 'negative'}">
-                            ${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? '✓ Mejor' : '✗ Por mejorar'}
-                        </span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <h3>Generación Residuos</h3>
-                    <div class="stat-value">${stats.residuosPromedio.toFixed(3)}</div>
-                    <div class="stat-comparison">
-                        Nacional 2025: ${resumenGlobal.global2025.generacionResiduos.toFixed(3)} m³/m²
-                        <span class="${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? 'positive' : 'negative'}">
-                            ${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? '✓ Mejor' : '✗ Por mejorar'}
-                        </span>
-                    </div>
-                </div>
-            `;
         }
 
         function calculateStats() {
@@ -522,8 +487,70 @@
             };
         }
 
+        function renderStats() {
+            const stats = calculateStats();
+            const statsGrid = document.getElementById('statsGrid');
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <h3>IPLC Promedio</h3>
+                    <div class="stat-value">${stats.iplcPromedio.toFixed(2)}</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${resumenGlobal.global2025.iplc.toFixed(2)} 
+                        <span class="${stats.iplcPromedio > resumenGlobal.global2025.iplc ? 'positive' : 'negative'}">
+                            ${stats.iplcPromedio > resumenGlobal.global2025.iplc ? '✓ Mayor productividad' : '✗ Menor productividad'}
+                        </span>
+                    </div>
+                    <div class="stat-comparison">
+                        Matrix 2020: ${resumenGlobal.global2020.iplc.toFixed(2)}
+                        <span class="${stats.iplcPromedio > resumenGlobal.global2020.iplc ? 'positive' : 'negative'}">
+                            ${stats.iplcPromedio > resumenGlobal.global2020.iplc ? '✓ Evolución positiva' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Desv. Plazo Promedio</h3>
+                    <div class="stat-value">${(stats.desviacionPlazoPromedio * 100).toFixed(1)}%</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1)}%
+                        <span class="${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? 'positive' : 'negative'}">
+                            ${Math.abs(stats.desviacionPlazoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPlazos) ? '✓ Mejor control' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                    <div class="stat-comparison">
+                        Matrix 2020: ${(resumenGlobal.global2020.desviacionPlazos * 100).toFixed(1)}%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Desv. Costo Promedio</h3>
+                    <div class="stat-value">${(stats.desviacionCostoPromedio * 100).toFixed(1)}%</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${(resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1)}%
+                        <span class="${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? 'positive' : 'negative'}">
+                            ${Math.abs(stats.desviacionCostoPromedio) < Math.abs(resumenGlobal.global2025.desviacionPresupuesto) ? '✓ Mejor control' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                    <div class="stat-comparison">
+                        Matrix 2020: ${(resumenGlobal.global2020.desviacionPresupuesto * 100).toFixed(1)}%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Generación Residuos</h3>
+                    <div class="stat-value">${stats.residuosPromedio.toFixed(3)}</div>
+                    <div class="stat-comparison">
+                        Nacional 2025: ${resumenGlobal.global2025.generacionResiduos.toFixed(3)} m³/m²
+                        <span class="${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? 'positive' : 'negative'}">
+                            ${stats.residuosPromedio < resumenGlobal.global2025.generacionResiduos ? '✓ Mejor gestión' : '✗ Por mejorar'}
+                        </span>
+                    </div>
+                    <div class="stat-comparison">
+                        Matrix 2020: ${resumenGlobal.global2020.generacionResiduos.toFixed(3)} m³/m²
+                    </div>
+                </div>
+            `;
+        }
+
         function renderCharts() {
-            // Gráfico IPLC
             const iplcCtx = document.getElementById('iplcChart').getContext('2d');
             new Chart(iplcCtx, {
                 type: 'bar',
@@ -560,108 +587,105 @@
                 }
             });
 
-            // Gráfico Desviaciones
             const desvCtx = document.getElementById('desviacionesChart').getContext('2d');
             new Chart(desvCtx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
-                        label: 'Proyectos',
+                        label: 'Proyectos de la Empresa',
                         data: proyectosData.map(p => ({
                             x: (p.desviacionPlazo || 0) * 100,
-                            y: (p.desviacionCostos || 0) * 100
+                            y: (p.desviacionCostos || 0) * 100,
+                            proyecto: p.nombre
                         })),
                         backgroundColor: '#006ec7',
-                        borderColor: '#006ec7'
+                        borderColor: '#006ec7',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }, {
+                        label: 'Promedio Nacional 2025',
+                        data: [{
+                            x: resumenGlobal.global2025.desviacionPlazos * 100,
+                            y: resumenGlobal.global2025.desviacionPresupuesto * 100
+                        }],
+                        backgroundColor: '#e74100',
+                        borderColor: '#e74100',
+                        pointRadius: 10,
+                        pointStyle: 'star'
+                    }, {
+                        label: 'Benchmark Matrix 2020',
+                        data: [{
+                            x: resumenGlobal.global2020.desviacionPlazos * 100,
+                            y: resumenGlobal.global2020.desviacionPresupuesto * 100
+                        }],
+                        backgroundColor: '#ff9800',
+                        borderColor: '#ff9800',
+                        pointRadius: 8,
+                        pointStyle: 'triangle'
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         legend: {
-                            display: false
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.label === 'Proyectos de la Empresa') {
+                                        const proyecto = context.raw.proyecto;
+                                        return proyecto + ': Plazo ' + context.parsed.x.toFixed(1) + '%, Costo ' + context.parsed.y.toFixed(1) + '%';
+                                    }
+                                    return context.dataset.label + ': Plazo ' + context.parsed.x.toFixed(1) + '%, Costo ' + context.parsed.y.toFixed(1) + '%';
+                                }
+                            }
                         }
                     },
                     scales: {
                         x: {
                             title: {
                                 display: true,
-                                text: 'Desviación de Plazo (%)'
+                                text: 'Desviación de Plazo (%) - Positivo: atraso | Negativo: adelanto',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: function(context) {
+                                    return context.tick.value === 0 ? '#666' : '#e0e0e0';
+                                },
+                                lineWidth: function(context) {
+                                    return context.tick.value === 0 ? 2 : 1;
+                                }
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: 'Desviación de Costo (%)'
+                                text: 'Desviación de Costo (%) - Positivo: sobrecosto | Negativo: ahorro',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: function(context) {
+                                    return context.tick.value === 0 ? '#666' : '#e0e0e0';
+                                },
+                                lineWidth: function(context) {
+                                    return context.tick.value === 0 ? 2 : 1;
+                                }
                             }
                         }
                     }
                 }
             });
-        }
-
-        function renderRecommendations() {
-            const stats = calculateStats();
-            const recommendations = [];
-            
-            // Análisis de consistencia IPLC
-            const iplcData = proyectosData.filter(p => p.iplc && !isNaN(p.iplc)).map(p => p.iplc);
-            const iplcStdDev = calculateStdDev(iplcData);
-            const iplcCV = iplcStdDev / stats.iplcPromedio;
-            
-            if (iplcCV > 0.3) {
-                recommendations.push({
-                    type: 'warning',
-                    text: `<strong>Alta variabilidad en IPLC:</strong> Sus proyectos presentan una desviación estándar de ${iplcStdDev.toFixed(2)} (coeficiente de variación: ${(iplcCV * 100).toFixed(1)}%). Se recomienda estandarizar procesos constructivos y metodologías de gestión para lograr mayor consistencia.`
-                });
-            } else {
-                recommendations.push({
-                    type: 'success',
-                    text: `<strong>Buena consistencia en IPLC:</strong> Sus proyectos mantienen indicadores consistentes (CV: ${(iplcCV * 100).toFixed(1)}%), lo que refleja procesos estandarizados efectivos.`
-                });
-            }
-            
-            // Comparación con benchmark
-            if (stats.iplcPromedio > resumenGlobal.global2025.iplc) {
-                recommendations.push({
-                    type: 'warning',
-                    text: `<strong>IPLC sobre promedio nacional:</strong> Su indicador promedio (${stats.iplcPromedio.toFixed(2)}) está ${(((stats.iplcPromedio / resumenGlobal.global2025.iplc) - 1) * 100).toFixed(1)}% sobre el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}). Un IPLC más alto indica menor productividad. Considere revisar planificación de recursos y optimización de cuadrillas.`
-                });
-            } else {
-                recommendations.push({
-                    type: 'success',
-                    text: `<strong>Excelente productividad:</strong> Su IPLC promedio (${stats.iplcPromedio.toFixed(2)}) está ${((1 - (stats.iplcPromedio / resumenGlobal.global2025.iplc)) * 100).toFixed(1)}% bajo el promedio nacional (${resumenGlobal.global2025.iplc.toFixed(2)}), indicando alta eficiencia productiva. Un IPLC más bajo significa que se necesita menos mano de obra por m² construido.`
-                });
-            }
-            
-            // Calidad de datos
-            const calidadPromedio = proyectosData.reduce((sum, p) => sum + (p.calidadDato || 3), 0) / proyectosData.length;
-            if (calidadPromedio > 1.5) {
-                recommendations.push({
-                    type: 'warning',
-                    text: `<strong>Calidad de datos mejorable:</strong> El promedio de calidad de datos es ${calidadPromedio.toFixed(1)}. Se recomienda implementar sistemas digitales de registro diario para mejorar la precisión de los indicadores.`
-                });
-            }
-            
-            // Uso de tecnologías
-            const usoBIM = proyectosData.filter(p => p.usoBIM === 'Implementó BIM').length;
-            const usoMMC = proyectosData.filter(p => p.usoMMC === 'Usó MMC').length;
-            
-            if (usoBIM / proyectosData.length < 0.5) {
-                recommendations.push({
-                    type: 'warning',
-                    text: `<strong>Bajo uso de BIM:</strong> Solo ${((usoBIM / proyectosData.length) * 100).toFixed(0)}% de sus proyectos implementan BIM. Esta tecnología puede mejorar significativamente la productividad y reducir desviaciones.`
-                });
-            }
-            
-            const recsHTML = recommendations.map(rec => 
-                `<div class="recommendation-item ${rec.type}">${rec.text}</div>`
-            ).join('');
-            
-            document.getElementById('recommendations').innerHTML = `
-                <h3>Recomendaciones y Análisis</h3>
-                ${recsHTML}
-            `;
         }
 
         function calculateStdDev(arr) {
@@ -670,45 +694,193 @@
             return Math.sqrt(variance);
         }
 
+        function renderAnalysis() {
+            const stats = calculateStats();
+            const analysis = document.getElementById('analysis');
+            
+            const iplcData = proyectosData.filter(p => p.iplc && !isNaN(p.iplc)).map(p => p.iplc);
+            const iplcStdDev = calculateStdDev(iplcData);
+            const iplcCV = iplcStdDev / stats.iplcPromedio;
+            
+            const proyectosConBIM = proyectosData.filter(p => p.usoBIM === 'Implementó BIM');
+            const proyectosSinBIM = proyectosData.filter(p => p.usoBIM === 'No se usó BIM');
+            const proyectosConMMC = proyectosData.filter(p => p.usoMMC === 'Usó MMC');
+            const proyectosSinMMC = proyectosData.filter(p => p.usoMMC === 'No usó MMC');
+            
+            const iplcConBIM = proyectosConBIM.length > 0 ? 
+                proyectosConBIM.reduce((sum, p) => sum + p.iplc, 0) / proyectosConBIM.length : 0;
+            const iplcSinBIM = proyectosSinBIM.length > 0 ? 
+                proyectosSinBIM.reduce((sum, p) => sum + p.iplc, 0) / proyectosSinBIM.length : 0;
+            
+            const iplcConMMC = proyectosConMMC.length > 0 ? 
+                proyectosConMMC.reduce((sum, p) => sum + p.iplc, 0) / proyectosConMMC.length : 0;
+            const iplcSinMMC = proyectosSinMMC.length > 0 ? 
+                proyectosSinMMC.reduce((sum, p) => sum + p.iplc, 0) / proyectosSinMMC.length : 0;
+            
+            const mejoraBIM = (iplcConBIM > 0 && iplcSinBIM > 0) ? ((iplcConBIM - iplcSinBIM) / iplcSinBIM * 100) : 0;
+            const mejoraMMC = (iplcConMMC > 0 && iplcSinMMC > 0) ? ((iplcConMMC - iplcSinMMC) / iplcSinMMC * 100) : 0;
+            
+            const desvPlazoBIM = proyectosConBIM.length > 0 ? 
+                Math.abs(proyectosConBIM.reduce((sum, p) => sum + (p.desviacionPlazo || 0), 0) / proyectosConBIM.length) : 0;
+            const desvPlazoSinBIM = proyectosSinBIM.length > 0 ? 
+                Math.abs(proyectosSinBIM.reduce((sum, p) => sum + (p.desviacionPlazo || 0), 0) / proyectosSinBIM.length) : 0;
+            
+            const desvCostoBIM = proyectosConBIM.length > 0 ? 
+                Math.abs(proyectosConBIM.reduce((sum, p) => sum + (p.desviacionCostos || 0), 0) / proyectosConBIM.length) : 0;
+            const desvCostoSinBIM = proyectosSinBIM.length > 0 ? 
+                Math.abs(proyectosSinBIM.reduce((sum, p) => sum + (p.desviacionCostos || 0), 0) / proyectosSinBIM.length) : 0;
+            
+            const calidadPromedio = proyectosData.reduce((sum, p) => sum + (p.calidadDato || 3), 0) / proyectosData.length;
+            const proyectosCalidad1 = proyectosData.filter(p => p.calidadDato === 1).length;
+            const proyectosCalidad2 = proyectosData.filter(p => p.calidadDato === 2).length;
+            const proyectosCalidad3 = proyectosData.filter(p => p.calidadDato === 3).length;
+            
+            let html = '<h3>📊 Análisis Detallado de Desempeño</h3>';
+            
+            const mejoraNacional2025 = ((stats.iplcPromedio - resumenGlobal.global2025.iplc) / resumenGlobal.global2025.iplc * 100);
+            const mejoraNacional2020 = ((stats.iplcPromedio - resumenGlobal.global2020.iplc) / resumenGlobal.global2020.iplc * 100);
+            
+            html += '<div class="analysis-subsection"><h4>1. Productividad Laboral (IPLC)</h4>';
+            html += '<div class="analysis-text">Su empresa presenta un <span class="metric-highlight">IPLC promedio de ' + stats.iplcPromedio.toFixed(2) + ' m²-persona día</span>, lo que representa un desempeño <strong>' + (mejoraNacional2025 > 0 ? 'superior' : 'inferior') + '</strong> en <span class="metric-highlight">' + Math.abs(mejoraNacional2025).toFixed(1) + '%</span> respecto al promedio nacional 2025 (' + resumenGlobal.global2025.iplc.toFixed(2) + '). Un IPLC más alto indica mayor productividad, ya que representa más metros cuadrados construidos por cada persona-día trabajada.</div>';
+            html += '<div class="analysis-text">Comparado con el benchmark Matrix 2020 (' + resumenGlobal.global2020.iplc.toFixed(2) + '), su empresa muestra una ' + (mejoraNacional2020 > 0 ? 'evolución positiva' : 'oportunidad de mejora') + ' de <span class="metric-highlight">' + Math.abs(mejoraNacional2020).toFixed(1) + '%</span>.</div>';
+            html += '<div class="analysis-text"><strong>Consistencia:</strong> La desviación estándar de sus proyectos es ' + iplcStdDev.toFixed(2) + ' con un coeficiente de variación (CV) de <span class="metric-highlight">' + (iplcCV * 100).toFixed(1) + '%</span>. ';
+            if (iplcCV < 0.15) {
+                html += 'Esto indica una <strong>excelente consistencia</strong> en sus procesos constructivos. Un CV bajo del ' + (iplcCV * 100).toFixed(1) + '% demuestra que su empresa ha logrado estandarizar metodologías de trabajo, lo que permite predecir con mayor certeza el desempeño de futuros proyectos y refleja madurez en la gestión de operaciones.';
+            } else if (iplcCV < 0.30) {
+                html += 'Esto indica una <strong>consistencia moderada</strong> con un CV de ' + (iplcCV * 100).toFixed(1) + '%. Existe variabilidad entre proyectos que sugiere diferencias en la gestión o condiciones de obra. Una mayor estandarización de procesos podría reducir esta dispersión y mejorar la previsibilidad del desempeño.';
+            } else {
+                html += 'Esto indica una <strong>alta variabilidad</strong> con un CV de ' + (iplcCV * 100).toFixed(1) + '%, lo que sugiere falta de estandarización en los procesos constructivos. Esta inconsistencia dificulta la predicción del desempeño y puede indicar diferencias significativas en gestión, metodologías o condiciones entre proyectos.';
+            }
+            html += '</div></div>';
+            
+            html += '<div class="analysis-subsection"><h4>2. Impacto de Tecnologías (BIM y MMC)</h4>';
+            if (proyectosConBIM.length > 0 && proyectosSinBIM.length > 0) {
+                html += '<div class="analysis-text"><strong>BIM:</strong> Sus proyectos que implementaron BIM (' + proyectosConBIM.length + ' de ' + proyectosData.length + ') alcanzaron un IPLC promedio de <span class="metric-highlight">' + iplcConBIM.toFixed(2) + '</span>, mientras que los que no lo implementaron registraron <span class="metric-highlight">' + iplcSinBIM.toFixed(2) + '</span>. Esto representa una ' + (mejoraBIM > 0 ? '<strong>mejora del ' + mejoraBIM.toFixed(1) + '%</strong> en productividad laboral' : 'diferencia de ' + Math.abs(mejoraBIM).toFixed(1) + '%') + '.</div>';
+                html += '<div class="analysis-text">En cuanto a control de proyecto, los proyectos con BIM presentaron una desviación promedio de plazo de <span class="metric-highlight">' + (desvPlazoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvPlazoSinBIM * 100).toFixed(1) + '%</span> sin BIM, y desviación de costos de <span class="metric-highlight">' + (desvCostoBIM * 100).toFixed(1) + '%</span> versus <span class="metric-highlight">' + (desvCostoSinBIM * 100).toFixed(1) + '%</span>.' + (desvPlazoBIM < desvPlazoSinBIM && desvCostoBIM < desvCostoSinBIM ? ' Esto confirma que BIM no solo mejora la productividad, sino también el control de plazos y costos.' : ' Sin embargo, las desviaciones requieren análisis de factores externos que pudieron afectar los proyectos.') + '</div>';
+            } else {
+                html += '<div class="analysis-text"><strong>BIM:</strong> ' + (proyectosConBIM.length === 0 ? 'Ninguno de sus proyectos ha implementado BIM. Estudios nacionales muestran que BIM aumenta en promedio un 21% la productividad laboral.' : 'No se puede realizar comparación directa ya que todos sus proyectos implementaron BIM.') + '</div>';
+            }
+            
+            if (proyectosConMMC.length > 0 && proyectosSinMMC.length > 0) {
+                html += '<div class="analysis-text"><strong>MMC:</strong> Los proyectos que utilizaron Métodos Modernos de Construcción (' + proyectosConMMC.length + ' de ' + proyectosData.length + ') lograron un IPLC de <span class="metric-highlight">' + iplcConMMC.toFixed(2) + '</span> versus <span class="metric-highlight">' + iplcSinMMC.toFixed(2) + '</span> sin MMC, ' + (mejoraMMC > 0 ? 'representando una <strong>mejora del ' + mejoraMMC.toFixed(1) + '%</strong> en productividad' : 'con una diferencia de ' + Math.abs(mejoraMMC).toFixed(1) + '%') + '. Estudios nacionales indican que MMC puede aumentar la productividad hasta en un 23%.</div>';
+            } else {
+                html += '<div class="analysis-text"><strong>MMC:</strong> ' + (proyectosConMMC.length === 0 ? 'Ninguno de sus proyectos ha utilizado MMC. Implementar estos métodos podría aumentar su productividad en promedio un 23%.' : 'No se puede realizar comparación directa ya que todos sus proyectos utilizaron MMC.') + '</div>';
+            }
+            html += '</div>';
+            
+            html += '<div class="analysis-subsection"><h4>3. Control de Plazos y Costos</h4>';
+            html += '<div class="analysis-text"><strong>Desviación de Plazos:</strong> Su promedio es <span class="metric-highlight">' + (stats.desviacionPlazoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionPlazoPromedio > 0 ? '(atraso)' : '(adelanto)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPlazos * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPlazos * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
+            html += '<div class="analysis-text"><strong>Desviación de Costos:</strong> Su promedio es <span class="metric-highlight">' + (stats.desviacionCostoPromedio * 100).toFixed(1) + '%</span> ' + (stats.desviacionCostoPromedio > 0 ? '(sobrecosto)' : '(ahorro)') + ', comparado con <span class="metric-highlight">' + (resumenGlobal.global2025.desviacionPresupuesto * 100).toFixed(1) + '%</span> a nivel nacional 2025 y <span class="metric-highlight">' + (resumenGlobal.global2020.desviacionPresupuesto * 100).toFixed(1) + '%</span> en Matrix 2020.</div>';
+            
+            if (stats.iplcPromedio > resumenGlobal.global2025.iplc && (Math.abs(stats.desviacionPlazoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPlazos) || Math.abs(stats.desviacionCostoPromedio) > Math.abs(resumenGlobal.global2025.desviacionPresupuesto))) {
+                html += '<div class="analysis-text"><strong>Análisis crítico:</strong> A pesar de lograr mejor productividad que el promedio nacional, presenta mayores desviaciones. Es fundamental evaluar factores externos que pudieron impactar estos proyectos, tales como: eventos de fuerza mayor (pandemia COVID-19, estallido social), condiciones climáticas adversas, paralizaciones del sector, cambios regulatorios, o problemas en la cadena de suministro.</div>';
+            }
+            html += '</div>';
+            
+            html += '<div class="analysis-subsection"><h4>4. Calidad y Confiabilidad de los Datos</h4>';
+            html += '<div class="analysis-text">El nivel promedio de calidad de sus datos es <span class="metric-highlight">' + calidadPromedio.toFixed(1) + '</span> en una escala de 1 a 3, donde 1 representa la máxima precisión (registro digital diario) y 3 representa estimaciones basadas en información parcial.</div>';
+            html += '<div class="analysis-text"><strong>Distribución de calidad:</strong><ul style="margin-top: 10px; margin-left: 20px;"><li><strong>Calidad 1 (Óptima):</strong> ' + proyectosCalidad1 + ' proyecto' + (proyectosCalidad1 !== 1 ? 's' : '') + ' (' + (proyectosCalidad1/proyectosData.length*100).toFixed(0) + '%) - Datos recolectados mediante plataforma digital con registro diario.</li><li><strong>Calidad 2 (Buena):</strong> ' + proyectosCalidad2 + ' proyecto' + (proyectosCalidad2 !== 1 ? 's' : '') + ' (' + (proyectosCalidad2/proyectosData.length*100).toFixed(0) + '%) - Datos extraídos de documentos administrativos.</li><li><strong>Calidad 3 (Mejorable):</strong> ' + proyectosCalidad3 + ' proyecto' + (proyectosCalidad3 !== 1 ? 's' : '') + ' (' + (proyectosCalidad3/proyectosData.length*100).toFixed(0) + '%) - Datos basados en estimaciones o información parcial.</li></ul></div>';
+            
+            if (calidadPromedio > 2) {
+                html += '<div class="analysis-text"><strong>Impacto:</strong> Una calidad de dato promedio superior a 2 implica que una proporción importante de sus indicadores se basa en estimaciones, lo que reduce la precisión para la toma de decisiones estratégicas.</div>';
+            } else if (calidadPromedio > 1.5) {
+                html += '<div class="analysis-text"><strong>Impacto:</strong> Su nivel de calidad es aceptable, pero existe margen de mejora. Migrar hacia sistemas digitales de registro diario aumentará la precisión de sus análisis.</div>';
+            } else {
+                html += '<div class="analysis-text"><strong>Impacto:</strong> Su empresa mantiene un excelente estándar de calidad de datos, lo que permite realizar análisis robustos y tomar decisiones basadas en información confiable.</div>';
+            }
+            html += '</div>';
+            
+            analysis.innerHTML = html;
+        }
+
+        function renderRecommendations() {
+            const stats = calculateStats();
+            const recommendations = [];
+            
+            const iplcData = proyectosData.filter(p => p.iplc && !isNaN(p.iplc)).map(p => p.iplc);
+            const iplcStdDev = calculateStdDev(iplcData);
+            const iplcCV = iplcStdDev / stats.iplcPromedio;
+            
+            const proyectosConBIM = proyectosData.filter(p => p.usoBIM === 'Implementó BIM');
+            const proyectosSinBIM = proyectosData.filter(p => p.usoBIM === 'No se usó BIM');
+            const proyectosConMMC = proyectosData.filter(p => p.usoMMC === 'Usó MMC');
+            const proyectosSinMMC = proyectosData.filter(p => p.usoMMC === 'No usó MMC');
+            
+            if (stats.iplcPromedio < resumenGlobal.global2025.iplc) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🔴 ALTA PRIORIDAD',
+                    text: '<strong>Mejorar Productividad Laboral:</strong> Su IPLC promedio (' + stats.iplcPromedio.toFixed(2) + ') está ' + (((resumenGlobal.global2025.iplc - stats.iplcPromedio) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% bajo el benchmark nacional. Un IPLC más alto significa mayor productividad.<br><strong>Acciones recomendadas:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Revisar planificación de recursos y dimensionamiento de cuadrillas</li><li>Implementar metodologías lean construction</li><li>Optimizar logística de materiales</li><li>Capacitar en trabajo colaborativo</li></ul>'
+                });
+            }
+            
+            if (iplcCV > 0.30) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🟡 PRIORIDAD MEDIA',
+                    text: '<strong>Estandarizar Procesos:</strong> El CV de ' + (iplcCV * 100).toFixed(1) + '% indica alta dispersión entre proyectos.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Desarrollar procedimientos estándar de trabajo</li><li>Implementar sistema de lecciones aprendidas</li><li>Crear manuales de mejores prácticas</li></ul>'
+                });
+            }
+            
+            if (proyectosSinBIM.length > proyectosConBIM.length) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🔴 ALTA PRIORIDAD',
+                    text: '<strong>Acelerar Adopción de BIM:</strong> Solo ' + ((proyectosConBIM.length / proyectosData.length) * 100).toFixed(0) + '% de sus proyectos implementan BIM. BIM puede aumentar productividad en 21%.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Establecer plan de implementación BIM a 2 años</li><li>Capacitar equipos internos</li><li>Iniciar con proyectos piloto</li></ul>'
+                });
+            }
+            
+            if (proyectosSinMMC.length > proyectosConMMC.length) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🟡 PRIORIDAD MEDIA',
+                    text: '<strong>Evaluar MMC:</strong> Solo ' + ((proyectosConMMC.length / proyectosData.length) * 100).toFixed(0) + '% usan MMC. Pueden aumentar productividad hasta 23%.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Realizar estudio de factibilidad</li><li>Identificar elementos repetitivos</li><li>Evaluar alianzas con proveedores</li></ul>'
+                });
+            }
+            
+            const calidadPromedio = proyectosData.reduce((sum, p) => sum + (p.calidadDato || 3), 0) / proyectosData.length;
+            if (calidadPromedio > 1.5) {
+                recommendations.push({
+                    type: 'warning',
+                    priority: '🔴 ALTA PRIORIDAD',
+                    text: '<strong>Mejorar Calidad de Datos:</strong> Nivel promedio ' + calidadPromedio.toFixed(1) + '. Datos imprecisos limitan decisiones estratégicas.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Implementar plataforma digital de control</li><li>Establecer protocolos de registro diario</li><li>Capacitar administradores de obra</li><li>Objetivo: 80%+ proyectos con calidad nivel 1</li></ul>'
+                });
+            }
+            
+            if (stats.iplcPromedio > resumenGlobal.global2025.iplc) {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    text: '<strong>Mantener Excelencia:</strong> Su IPLC está ' + (((stats.iplcPromedio - resumenGlobal.global2025.iplc) / resumenGlobal.global2025.iplc) * 100).toFixed(1) + '% sobre el promedio nacional.<br><strong>Acciones:</strong><ul style="margin-top: 8px; margin-left: 20px;"><li>Documentar mejores prácticas</li><li>Programa de mentorías</li><li>Participar en benchmarking</li></ul>'
+                });
+            }
+            
+            if (iplcCV < 0.20) {
+                recommendations.push({
+                    type: 'success',
+                    priority: '✅ FORTALEZA',
+                    text: '<strong>Excelente Consistencia:</strong> Su CV de ' + (iplcCV * 100).toFixed(1) + '% demuestra procesos maduros y previsibles.'
+                });
+            }
+            
+            let recsHTML = '';
+            for (let i = 0; i < recommendations.length; i++) {
+                const rec = recommendations[i];
+                recsHTML += '<div class="recommendation-item ' + rec.type + '"><div style="font-size: 13px; font-weight: bold; color: #666; margin-bottom: 5px;">' + rec.priority + '</div>' + rec.text + '</div>';
+            }
+            
+            document.getElementById('recommendations').innerHTML = '<h3>💡 Recomendaciones Estratégicas</h3><p style="margin-bottom: 20px; color: #666;">Basadas en el análisis comparativo con benchmarks nacionales.</p>' + recsHTML;
+        }
+
         function renderTable() {
             const table = document.getElementById('projectsTable');
             
-            let html = `
-                <thead>
-                    <tr>
-                        <th>Proyecto</th>
-                        <th>Año</th>
-                        <th>Tipo</th>
-                        <th>Región</th>
-                        <th>IPLC</th>
-                        <th>Desv. Plazo</th>
-                        <th>Desv. Costo</th>
-                        <th>Residuos</th>
-                        <th>BIM</th>
-                        <th>MMC</th>
-                        <th>Calidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-            `;
+            let html = '<thead><tr><th>Proyecto</th><th>Año</th><th>Tipo</th><th>Región</th><th>IPLC</th><th>Desv. Plazo</th><th>Desv. Costo</th><th>Residuos</th><th>BIM</th><th>MMC</th><th>Calidad</th></tr></thead><tbody>';
             
-            proyectosData.forEach(p => {
-                html += `
-                    <tr>
-                        <td>${p.nombre}</td>
-                        <td>${p.anioTermino || 'N/A'}</td>
-                        <td>${p.tipo || 'N/A'}</td>
-                        <td>${p.region || 'N/A'}</td>
-                        <td>${p.iplc ? p.iplc.toFixed(2) : 'N/A'}</td>
-                        <td class="${p.desviacionPlazo > 0 ? 'negative' : 'positive'}">${p.desviacionPlazo ? (p.desviacionPlazo * 100).toFixed(1) + '%' : 'N/A'}</td>
-                        <td class="${p.desviacionCostos > 0 ? 'negative' : 'positive'}">${p.desviacionCostos ? (p.desviacionCostos * 100).toFixed(1) + '%' : 'N/A'}</td>
-                        <td>${p.generacionResiduos ? p.generacionResiduos.toFixed(3) : 'N/A'}</td>
-                        <td>${p.usoBIM || 'N/A'}</td>
-                        <td>${p.usoMMC || 'N/A'}</td>
-                        <td><span class="quality-badge quality-${p.calidadDato || 3}">${p.calidadDato || 'N/A'}</span></td>
-                    </tr>
-                `;
-            });
+            for (let i = 0; i < proyectosData.length; i++) {
+                const p = proyectosData[i];
+                html += '<tr><td>' + p.nombre + '</td><td>' + (p.anioTermino || 'N/A') + '</td><td>' + (p.tipo || 'N/A') + '</td><td>' + (p.region || 'N/A') + '</td><td>' + (p.iplc ? p.iplc.toFixed(2) : 'N/A') + '</td><td class="' + (p.desviacionPlazo > 0 ? 'negative' : 'positive') + '">' + (p.desviacionPlazo ? (p.desviacionPlazo * 100).toFixed(1) + '%' : 'N/A') + '</td><td class="' + (p.desviacionCostos > 0 ? 'negative' : 'positive') + '">' + (p.desviacionCostos ? (p.desviacionCostos * 100).toFixed(1) + '%' : 'N/A') + '</td><td>' + (p.generacionResiduos ? p.generacionResiduos.toFixed(3) : 'N/A') + '</td><td>' + (p.usoBIM || 'N/A') + '</td><td>' + (p.usoMMC || 'N/A') + '</td><td><span class="quality-badge quality-' + (p.calidadDato || 3) + '">' + (p.calidadDato || 'N/A') + '</span></td></tr>';
+            }
             
             html += '</tbody>';
             table.innerHTML = html;
